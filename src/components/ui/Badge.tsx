@@ -1,0 +1,61 @@
+import { cn } from '@/utils/cn'
+import type { TicketPriority, TicketStatus, AssetStatus } from '@/types'
+
+type BadgeVariant = 'priority' | 'status' | 'assetStatus' | 'role' | 'default'
+
+interface BadgeProps {
+  variant?: BadgeVariant
+  value: string
+  className?: string
+}
+
+const priorityColors: Record<TicketPriority, string> = {
+  Critical: 'bg-red-500/20 text-red-400 border-red-500/30',
+  High: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  Medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  Low: 'bg-green-500/20 text-green-400 border-green-500/30',
+}
+
+const statusColors: Record<TicketStatus, string> = {
+  Open: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  'In Progress': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  Completed: 'bg-green-500/20 text-green-400 border-green-500/30',
+}
+
+const assetStatusColors: Record<AssetStatus, string> = {
+  Active: 'bg-green-500/20 text-green-400 border-green-500/30',
+  Maintenance: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  Retired: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+}
+
+const roleColors: Record<string, string> = {
+  employee: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  it_support: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  leader_it: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+}
+
+export function Badge({ variant = 'default', value, className }: BadgeProps) {
+  let colorClass = 'bg-white/10 text-text-secondary border-white/10'
+
+  if (variant === 'priority') {
+    colorClass = priorityColors[value as TicketPriority] ?? colorClass
+  } else if (variant === 'status') {
+    colorClass = statusColors[value as TicketStatus] ?? colorClass
+  } else if (variant === 'assetStatus') {
+    colorClass = assetStatusColors[value as AssetStatus] ?? colorClass
+  } else if (variant === 'role') {
+    colorClass = roleColors[value] ?? colorClass
+  }
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border',
+        colorClass,
+        className,
+      )}
+    >
+      {value}
+    </span>
+  )
+}
