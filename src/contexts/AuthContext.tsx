@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import { authService } from '@/services/authService'
-import { seedDatabase } from '@/services/repositories/local/seed'
+import { migrateDatabase, seedDatabase } from '@/services/repositories/local/seed'
 import type { Session, User, Role } from '@/types'
 
 interface AuthContextType {
@@ -41,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    migrateDatabase()
     seedDatabase()
     refreshUser().finally(() => setLoading(false))
   }, [refreshUser])

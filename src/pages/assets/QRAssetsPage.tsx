@@ -2,10 +2,37 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import QRCode from 'react-qr-code'
-import { Card, SkeletonList, EmptyState } from '@/components/ui'
+import { Card, SkeletonList, EmptyState, Button } from '@/components/ui'
 import { assetService } from '@/services/assetService'
 import { getAssetUrl } from '@/utils/formatters'
+import { useQRCodeDownload } from '@/hooks/useQRCodeDownload'
 import type { Asset } from '@/types'
+
+function QRCodeCard({ asset, onNavigate }: { asset: Asset; onNavigate: () => void }) {
+  const { setContainerRef, download } = useQRCodeDownload()
+
+  return (
+    <Card hover className="cursor-pointer text-center" onClick={onNavigate}>
+      <div ref={setContainerRef} className="bg-white p-4 rounded-xl inline-block mb-4">
+        <QRCode value={getAssetUrl(asset.id)} size={120} />
+      </div>
+      <h3 className="font-semibold text-text-primary">{asset.name}</h3>
+      <p className="text-xs font-mono text-text-muted mt-1">{asset.id}</p>
+      <p className="text-sm text-text-muted mt-1">{asset.location}</p>
+      <Button
+        variant="secondary"
+        size="sm"
+        className="mt-4"
+        onClick={(e) => {
+          e.stopPropagation()
+          download()
+        }}
+      >
+        Download QR Code
+      </Button>
+    </Card>
+  )
+}
 
 export function QRAssetsPage() {
   const navigate = useNavigate()
@@ -21,14 +48,14 @@ export function QRAssetsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-text-primary">QR Assets</h2>
+        <h2 className="text-2xl font-bold text-text-primary">QR Code</h2>
         <p className="text-text-muted text-sm mt-1">
-          Scan QR codes to instantly access asset information
+          Pindai QR Code untuk mengakses informasi aset secara instan
         </p>
       </div>
 
       {assets.length === 0 ? (
-        <EmptyState icon="📱" title="No assets" description="Add assets to generate QR codes." />
+        <EmptyState title="Tidak ada aset" description="Tambah aset untuk menghasilkan QR Code." />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {assets.map((asset, i) => (
@@ -38,18 +65,7 @@ export function QRAssetsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
             >
-              <Card
-                hover
-                className="cursor-pointer text-center"
-                onClick={() => navigate(`/assets/manage/${asset.id}`)}
-              >
-                <div className="bg-white p-4 rounded-xl inline-block mb-4">
-                  <QRCode value={getAssetUrl(asset.id)} size={120} />
-                </div>
-                <h3 className="font-semibold text-text-primary">{asset.name}</h3>
-                <p className="text-xs font-mono text-text-muted mt-1">{asset.id}</p>
-                <p className="text-sm text-text-muted mt-1">{asset.location}</p>
-              </Card>
+              <QRCodeCard asset={asset} onNavigate={() => navigate(`/assets/manage/${asset.id}`)} />
             </motion.div>
           ))}
         </div>

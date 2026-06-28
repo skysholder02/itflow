@@ -13,7 +13,7 @@ const categories: TicketCategory[] = [
 export const statsService = {
   async getDashboardStats(role: Role, userId: string): Promise<DashboardStats> {
     const allTickets =
-      role === 'employee'
+      role === 'karyawan'
         ? await ticketRepo.getByReporter(userId)
         : await ticketRepo.getAll()
 

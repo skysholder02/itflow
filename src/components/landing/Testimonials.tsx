@@ -1,25 +1,23 @@
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui'
-import { cardStaggerContainer, cardStaggerItem, fadeUp } from '@/animations/variants'
+import { cardStaggerContainer, cardStaggerItem } from '@/animations/variants'
+import { fadeUp, fadeUpTransition } from '@/animations/variants';
 
 const testimonials = [
   {
     name: 'David Martinez',
     role: 'Plant Manager, Apex Manufacturing',
-    quote: 'ITFlow transformed how we handle IT requests. Ticket resolution time dropped by 60% in the first quarter.',
-    avatar: 'DM',
+    quote: 'ITFlow mengubah cara kami menangani permintaan IT. Waktu penyelesaian Tiket turun 60% pada kuartal pertama.',
   },
   {
     name: 'Lisa Thompson',
     role: 'IT Director, Global Industries',
-    quote: 'The QR asset tracking alone saved us countless hours. Technicians can pull up repair history instantly on the factory floor.',
-    avatar: 'LT',
+    quote: 'Pelacakan aset dengan QR Code menghemat banyak waktu. Teknisi bisa melihat riwayat perbaikan langsung di area kerja.',
   },
   {
     name: 'James Wilson',
     role: 'Operations Lead, SteelWorks Corp',
-    quote: 'Finally, a platform that understands industrial IT. The dashboard gives our leadership real visibility into IT performance.',
-    avatar: 'JW',
+    quote: 'Akhirnya ada platform yang memahami kebutuhan IT operasional. Dashboard memberi visibilitas nyata atas performa IT.',
   },
 ]
 
@@ -32,13 +30,14 @@ export function Testimonials() {
           initial="initial"
           whileInView="animate"
           viewport={{ once: true }}
+            transition={fadeUpTransition}
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-            What Teams Say
+            Kata Tim Pengguna
           </h2>
           <p className="text-text-muted max-w-2xl mx-auto">
-            Hear from IT professionals who rely on ITFlow every day.
+            Cerita dari profesional IT yang menggunakan ITFlow setiap hari.
           </p>
         </motion.div>
 
@@ -55,14 +54,9 @@ export function Testimonials() {
                 <p className="text-text-secondary text-sm leading-relaxed flex-1 mb-6">
                   &ldquo;{t.quote}&rdquo;
                 </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-primary to-brand-accent flex items-center justify-center text-sm font-bold">
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-text-primary">{t.name}</p>
-                    <p className="text-xs text-text-muted">{t.role}</p>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium text-text-primary">{t.name}</p>
+                  <p className="text-xs text-text-muted">{t.role}</p>
                 </div>
               </Card>
             </motion.div>

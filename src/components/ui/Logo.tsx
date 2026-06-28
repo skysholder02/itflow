@@ -5,6 +5,7 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg'
   layoutId?: string
   className?: string
+  transition?: any
 }
 
 const sizes = {
@@ -13,9 +14,13 @@ const sizes = {
   lg: 'text-4xl',
 }
 
-export function Logo({ size = 'md', layoutId, className }: LogoProps) {
+export function Logo({ size = 'md', layoutId, className, transition }: LogoProps) {
   return (
-    <motion.div layoutId={layoutId} className={cn('flex items-center gap-2', className)}>
+    <motion.div
+      layoutId={layoutId}
+      transition={transition}
+      className={cn('flex items-center gap-2', className)}
+    >
       <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-primary to-brand-accent flex items-center justify-center">
         <span className="text-white font-bold text-sm">IF</span>
       </div>

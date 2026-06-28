@@ -1,14 +1,24 @@
-import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import QRCode from 'react-qr-code'
-import { Button, Badge, Card, Input, Textarea, Skeleton, GlowBackground, Logo } from '@/components/ui'
+import {
+  Badge,
+  Button,
+  Card,
+  GlowBackground,
+  Input,
+  Logo,
+  Skeleton,
+  Textarea,
+} from '@/components/ui'
 import { assetService } from '@/services/assetService'
 import { assetHistoryService } from '@/services/assetHistoryService'
 import { useAuth } from '@/contexts/AuthContext'
-import { getAssetUrl, formatDate } from '@/utils/formatters'
+import { formatDate, formatAssetCategory, getAssetUrl } from '@/utils/formatters'
+import { useQRCodeDownload } from '@/hooks/useQRCodeDownload'
 import type { Asset, AssetHistory } from '@/types'
 
 const historySchema = z.object({
@@ -24,6 +34,33 @@ interface AssetDetailPageProps {
   publicView?: boolean
 }
 
+function HistoryTimeline({ histories }: { histories: AssetHistory[] }) {
+  if (histories.length === 0) {
+    return <p className="text-text-muted text-sm">Belum ada riwayat perbaikan.</p>
+  }
+
+  return (
+    <div className="space-y-0">
+      {histories.map((history, index) => (
+        <div key={history.id} className="relative pl-8 pb-6 last:pb-0">
+          {index < histories.length - 1 && (
+            <div className="absolute left-[11px] top-6 bottom-0 w-0.5 bg-white/10" />
+          )}
+          <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-brand-primary/20 border-2 border-brand-primary flex items-center justify-center">
+            <div className="w-2 h-2 rounded-full bg-brand-primary" />
+          </div>
+          <div>
+            <p className="text-xs text-text-muted">{formatDate(history.date)}</p>
+            <p className="text-text-primary font-medium mt-1">{history.problem}</p>
+            <p className="text-text-secondary text-sm mt-1">{history.action}</p>
+            <p className="text-text-muted text-xs mt-1">Teknisi: {history.technician}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
   const { id } = useParams<{ id: string }>()
   const { role, isAuthenticated } = useAuth()
@@ -32,6 +69,7 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
   const [histories, setHistories] = useState<AssetHistory[]>([])
   const [loading, setLoading] = useState(true)
   const [showHistoryForm, setShowHistoryForm] = useState(false)
+  const [showFullHistory, setShowFullHistory] = useState(false)
 
   const canManageHistory = role ? assetHistoryService.canManageHistory(role) : false
   const isPublic = publicView && !isAuthenticated
@@ -46,7 +84,9 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
     defaultValues: { date: new Date().toISOString().split('T')[0], technician: '' },
   })
 
-  const loadData = async () => {
+  const { setContainerRef: setStatusSvgRef, download: downloadStatusQr } = useQRCodeDownload()
+
+  const loadData = useCallback(async () => {
     if (!id) return
     const [assetData, historyData] = await Promise.all([
       assetService.getAsset(id),
@@ -55,11 +95,11 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
     setAsset(assetData)
     setHistories(historyData)
     setLoading(false)
-  }
+  }, [id])
 
   useEffect(() => {
     loadData()
-  }, [id])
+  }, [loadData])
 
   const onAddHistory = async (data: HistoryForm) => {
     if (!id) return
@@ -83,130 +123,176 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
   if (!asset) {
     return (
       <div className="text-center py-16">
-        <p className="text-text-muted">Asset not found</p>
+        <p className="text-text-muted">Aset tidak ditemukan</p>
       </div>
     )
   }
 
-  const content = (
-    <div className="max-w-3xl mx-auto">
-      {!isPublic && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mb-4"
-          onClick={() => navigate(isAuthenticated ? '/assets' : '/')}
-        >
-          ← Back
-        </Button>
-      )}
+  const lastMaintenance = histories[0]
+  const visibleHistories = showFullHistory ? histories : histories.slice(0, 3)
 
-      <Card className="mb-6">
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-mono text-text-muted">{asset.id}</span>
-              <Badge variant="assetStatus" value={asset.status} />
-              <Badge value={asset.category} />
+  const content = (
+    <div className="max-w-4xl mx-auto pb-28 md:pb-0">
+        {!isPublic && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-4"
+            onClick={() => navigate(isAuthenticated ? '/assets' : '/')}
+          >
+            Kembali
+          </Button>
+        )}
+
+      <header className="mb-6">
+        <p className="text-sm uppercase tracking-wider text-brand-primary font-semibold">
+          Informasi Aset
+        </p>
+        <h1 className="text-3xl md:text-4xl font-bold text-text-primary mt-2">
+          {asset.name}
+        </h1>
+        <p className="text-text-muted mt-2">
+          Detail siap scan, status pemeliharaan, dan tindakan layanan.
+        </p>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 mb-6">
+        <Card>
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-text-primary">Detail Aset</h2>
+              <p className="text-sm font-mono text-text-muted mt-1">{asset.id}</p>
             </div>
-            <h2 className="text-2xl font-bold text-text-primary mb-4">{asset.name}</h2>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-text-muted">Brand</span>
-                <p className="text-text-primary">{asset.brand}</p>
-              </div>
-              <div>
-                <span className="text-text-muted">Serial Number</span>
-                <p className="text-text-primary font-mono">{asset.serialNumber}</p>
-              </div>
-              <div>
-                <span className="text-text-muted">Location</span>
-                <p className="text-text-primary">{asset.location}</p>
-              </div>
-              <div>
-                <span className="text-text-muted">Status</span>
-                <p className="text-text-primary">{asset.status}</p>
-              </div>
+            <Badge value={formatAssetCategory(asset.category)} />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div className="rounded-2xl bg-white/5 p-4">
+              <span className="text-text-muted">Nama Aset</span>
+              <p className="text-text-primary font-medium mt-1">{asset.name}</p>
+            </div>
+            <div className="rounded-2xl bg-white/5 p-4">
+              <span className="text-text-muted">ID Aset</span>
+              <p className="text-text-primary font-mono mt-1">{asset.id}</p>
+            </div>
+            <div className="rounded-2xl bg-white/5 p-4">
+              <span className="text-text-muted">Merek</span>
+              <p className="text-text-primary font-medium mt-1">{asset.brand}</p>
+            </div>
+            <div className="rounded-2xl bg-white/5 p-4">
+              <span className="text-text-muted">Nomor Serial</span>
+              <p className="text-text-primary font-mono mt-1 break-all">{asset.serialNumber}</p>
+            </div>
+            <div className="rounded-2xl bg-white/5 p-4 sm:col-span-2">
+              <span className="text-text-muted">Lokasi</span>
+              <p className="text-text-primary font-medium mt-1">{asset.location}</p>
             </div>
           </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="bg-white p-4 rounded-xl">
-              <QRCode value={getAssetUrl(asset.id)} size={140} />
-            </div>
-            <p className="text-xs text-text-muted text-center max-w-[160px]">
-              Scan to view asset info
+        </Card>
+
+        <Card className="text-center">
+          <h2 className="text-xl font-semibold text-text-primary mb-4">Status Saat Ini</h2>
+          <div ref={setStatusSvgRef} className="bg-white p-4 rounded-xl inline-block mb-4">
+            <QRCode value={getAssetUrl(asset.id)} size={150} />
+          </div>
+          <div className="flex justify-center mb-4">
+            <Badge variant="assetStatus" value={asset.status} />
+          </div>
+          <Button variant="secondary" size="sm" onClick={downloadStatusQr} className="mb-5">
+            Download QR Code
+          </Button>
+          <div className="mt-5 text-left rounded-2xl bg-white/5 p-4">
+            <span className="text-text-muted text-sm">Pemeliharaan Terakhir</span>
+            <p className="text-text-primary font-medium mt-1">
+              {lastMaintenance ? formatDate(lastMaintenance.date) : 'Belum ada pemeliharaan'}
             </p>
+            {lastMaintenance && (
+              <p className="text-text-muted text-xs mt-2">{lastMaintenance.problem}</p>
+            )}
           </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
 
       <Card>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-text-primary">Repair History</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-text-primary">Riwayat Terbaru</h3>
+            <p className="text-text-muted text-sm">
+              {showFullHistory ? 'Linimasa perbaikan lengkap' : 'Aktivitas pemeliharaan terbaru'}
+            </p>
+          </div>
           {canManageHistory && !showHistoryForm && (
             <Button size="sm" onClick={() => setShowHistoryForm(true)}>
-              Add Entry
+              Tambah Entri
             </Button>
           )}
         </div>
 
         {showHistoryForm && (
-          <form onSubmit={handleSubmit(onAddHistory)} className="space-y-4 mb-6 p-4 rounded-xl bg-white/5">
-            <Input label="Date" type="date" error={errors.date?.message} {...register('date')} />
-            <Input label="Problem" error={errors.problem?.message} {...register('problem')} />
-            <Textarea label="Action Taken" error={errors.action?.message} {...register('action')} />
-            <Input label="Technician" error={errors.technician?.message} {...register('technician')} />
+          <form
+            onSubmit={handleSubmit(onAddHistory)}
+            className="space-y-4 mb-6 p-4 rounded-xl bg-white/5"
+          >
+            <Input label="Tanggal" type="date" error={errors.date?.message} {...register('date')} />
+            <Input label="Masalah" error={errors.problem?.message} {...register('problem')} />
+            <Textarea label="Tindakan yang Dilakukan" error={errors.action?.message} {...register('action')} />
+            <Input label="Teknisi" error={errors.technician?.message} {...register('technician')} />
             <div className="flex gap-3">
-              <Button type="submit" loading={isSubmitting} size="sm">Save</Button>
-              <Button variant="ghost" size="sm" type="button" onClick={() => setShowHistoryForm(false)}>
-                Cancel
+              <Button type="submit" loading={isSubmitting} size="sm">
+                Simpan
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={() => setShowHistoryForm(false)}
+              >
+                Batal
               </Button>
             </div>
           </form>
         )}
 
-        {histories.length === 0 ? (
-          <p className="text-text-muted text-sm">No repair history recorded.</p>
-        ) : (
-          <div className="space-y-0">
-            {histories.map((h, i) => (
-              <div key={h.id} className="relative pl-8 pb-6 last:pb-0">
-                {i < histories.length - 1 && (
-                  <div className="absolute left-[11px] top-6 bottom-0 w-0.5 bg-white/10" />
-                )}
-                <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-brand-primary/20 border-2 border-brand-primary flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-brand-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-text-muted">{formatDate(h.date)}</p>
-                  <p className="text-text-primary font-medium mt-1">{h.problem}</p>
-                  <p className="text-text-secondary text-sm mt-1">{h.action}</p>
-                  <p className="text-text-muted text-xs mt-1">Technician: {h.technician}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <HistoryTimeline histories={visibleHistories} />
       </Card>
 
-      {isPublic && (
-        <div className="text-center mt-8">
-          <Link to="/login">
-            <Button variant="secondary">Login to ITFlow</Button>
-          </Link>
+      <div className="fixed inset-x-0 bottom-0 z-30 px-6 py-4 bg-bg-primary/90 backdrop-blur-xl border-t border-white/6 md:static md:px-0 md:py-0 md:mt-6 md:bg-transparent md:backdrop-blur-0 md:border-0">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={() => setShowFullHistory((current) => !current)}
+            className="w-full"
+          >
+            {showFullHistory ? 'Tampilkan Riwayat Terbaru' : 'Lihat Riwayat Lengkap'}
+          </Button>
+          <Button
+            size="lg"
+            onClick={() => navigate(`/tickets/create?assetId=${asset.id}`)}
+            className="w-full"
+          >
+            Laporkan Masalah
+          </Button>
         </div>
-      )}
+        {isPublic && (
+          <div className="text-center mt-4">
+            <Link to="/login" className="text-sm text-text-muted hover:text-text-primary">
+              Login ke ITFlow
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   )
 
   if (isPublic) {
     return (
-      <div className="min-h-screen relative py-12 px-6">
+      <div className="min-h-screen relative py-10 px-5 sm:px-6">
         <GlowBackground />
         <div className="relative z-10">
           <div className="text-center mb-8">
             <Logo size="md" className="justify-center" />
-            <p className="text-text-muted text-sm mt-2">Asset Information</p>
+            <p className="text-text-muted text-sm mt-2">Pemindaian QR Code Aset</p>
           </div>
           {content}
         </div>

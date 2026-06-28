@@ -23,6 +23,6 @@ export const assetService = {
   },
 
   canManageAssets(role: Role): boolean {
-    return role === 'it_support' || role === 'leader_it'
+    return role === 'itsupport' || role === 'leaderit'
   },
 }

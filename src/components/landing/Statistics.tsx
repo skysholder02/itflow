@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Card } from '@/components/ui'
-import { fadeUp } from '@/animations/variants'
+import { fadeUp, fadeUpTransition } from '@/animations/variants';
 
 function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0)
@@ -33,10 +33,10 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: str
 }
 
 const stats = [
-  { label: 'Tickets Resolved', value: 1248, suffix: '+' },
-  { label: 'Assets Tracked', value: 856, suffix: '+' },
-  { label: 'System Uptime', value: 99, suffix: '.9%' },
-  { label: 'Active Users', value: 340, suffix: '+' },
+  { label: 'Tiket Selesai', value: 1248, suffix: '+' },
+  { label: 'Aset Terpantau', value: 856, suffix: '+' },
+  { label: 'Uptime Sistem', value: 99, suffix: '.9%' },
+  { label: 'User Aktif', value: 340, suffix: '+' },
 ]
 
 export function Statistics() {
@@ -48,13 +48,14 @@ export function Statistics() {
           initial="initial"
           whileInView="animate"
           viewport={{ once: true }}
+            transition={fadeUpTransition}
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-            Trusted by IT Teams
+            Dipercaya Tim IT
           </h2>
           <p className="text-text-muted max-w-2xl mx-auto">
-            Real numbers from organizations managing their IT infrastructure with ITFlow.
+            Angka nyata dari organisasi yang mengelola infrastruktur IT dengan ITFlow.
           </p>
         </motion.div>
 

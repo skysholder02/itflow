@@ -6,10 +6,11 @@ import { Testimonials } from '@/components/landing/Testimonials'
 import { Contact } from '@/components/landing/Contact'
 import { Footer } from '@/components/landing/Footer'
 import { GlowBackground } from '@/components/ui'
+import { PageTransition } from '@/components/ui'
 
 export function LandingPage() {
   return (
-    <div className="relative min-h-screen">
+    <PageTransition className="relative min-h-screen">
       <GlowBackground />
       <Navbar />
       <Hero />
@@ -18,6 +19,6 @@ export function LandingPage() {
       <Testimonials />
       <Contact />
       <Footer />
-    </div>
+    </PageTransition>
   )
 }

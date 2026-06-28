@@ -1,21 +1,46 @@
-import { BrowserRouter } from 'react-router-dom'
+import { HashRouter, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { TransitionProvider } from '@/contexts/TransitionContext'
 import { AppRoutes } from '@/routes'
 import { LoginTransition } from '@/components/auth/LoginTransition'
 
+const getTransitionKey = (pathname: string) => {
+  if (pathname.match(/^\/assets\/[^/]+$/)) {
+    return pathname
+  }
+  if (
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/tickets') ||
+    pathname.startsWith('/assets') ||
+    pathname.startsWith('/qr-assets') ||
+    pathname.startsWith('/profile')
+  ) {
+    return 'dashboard-layout'
+  }
+  return pathname
+}
+
+function AppContent() {
+  const location = useLocation()
+  return (
+    <>
+      <AnimatePresence mode="sync">
+        <AppRoutes key={getTransitionKey(location.pathname)} />
+      </AnimatePresence>
+      <LoginTransition />
+    </>
+  )
+}
+
 export function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <AuthProvider>
         <TransitionProvider>
-          <AnimatePresence mode="wait">
-            <AppRoutes />
-          </AnimatePresence>
-          <LoginTransition />
+          <AppContent />
         </TransitionProvider>
       </AuthProvider>
-    </BrowserRouter>
+    </HashRouter>
   )
 }

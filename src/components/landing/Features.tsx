@@ -1,37 +1,32 @@
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui'
-import { cardStaggerContainer, cardStaggerItem, fadeUp } from '@/animations/variants'
+import { cardStaggerContainer, cardStaggerItem } from '@/animations/variants'
+import { fadeUp, fadeUpTransition } from '@/animations/variants';
 
 const features = [
   {
-    icon: '🎫',
-    title: 'Smart Ticketing',
-    description: 'Create, track, and resolve IT tickets with priority-based workflows and real-time status updates.',
+    title: 'Ticketing Cerdas',
+    description: 'Buat, pantau, dan selesaikan Tiket IT dengan alur kerja berbasis prioritas dan update status real-time.',
   },
   {
-    icon: '💻',
-    title: 'Asset Management',
-    description: 'Track every device, printer, and access point across your entire industrial infrastructure.',
+    title: 'Manajemen Aset',
+    description: 'Pantau setiap perangkat, printer, dan access point di seluruh infrastruktur operasional.',
   },
   {
-    icon: '📱',
-    title: 'QR Asset Tracking',
-    description: 'Generate QR codes for instant asset lookup, repair history, and status verification on-site.',
+    title: 'Pelacakan Aset QR Code',
+    description: 'Buat QR Code untuk melihat aset, riwayat perbaikan, dan status perangkat langsung di lokasi.',
   },
   {
-    icon: '📊',
-    title: 'Infrastructure Monitoring',
-    description: 'Monitor network health, device status, and system performance from a unified dashboard.',
+    title: 'Monitoring Infrastruktur',
+    description: 'Pantau kondisi jaringan, status perangkat, dan performa sistem dari satu Dashboard.',
   },
   {
-    icon: '📈',
-    title: 'Analytics & Reports',
-    description: 'Gain insights with category breakdowns, resolution metrics, and trend analysis for IT leadership.',
+    title: 'Analitik & Laporan',
+    description: 'Dapatkan insight dari ringkasan kategori, metrik penyelesaian, dan analisis tren untuk tim IT.',
   },
   {
-    icon: '🔔',
-    title: 'Smart Notifications',
-    description: 'Stay informed with real-time alerts for critical tickets, asset maintenance, and system events.',
+    title: 'Notifikasi Cerdas',
+    description: 'Tetap terinformasi dengan alert real-time untuk Tiket kritis, maintenance aset, dan event sistem.',
   },
 ]
 
@@ -44,13 +39,14 @@ export function Features() {
           initial="initial"
           whileInView="animate"
           viewport={{ once: true }}
+          transition={fadeUpTransition}
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-            Everything You Need
+            Semua yang Anda Butuhkan
           </h2>
           <p className="text-text-muted max-w-2xl mx-auto">
-            A comprehensive IT service management platform built for industrial environments.
+            Platform manajemen layanan IT yang lengkap untuk lingkungan operasional modern.
           </p>
         </motion.div>
 
@@ -64,7 +60,6 @@ export function Features() {
           {features.map((feature) => (
             <motion.div key={feature.title} variants={cardStaggerItem}>
               <Card hover className="h-full">
-                <div className="text-3xl mb-4">{feature.icon}</div>
                 <h3 className="text-lg font-semibold text-text-primary mb-2">
                   {feature.title}
                 </h3>

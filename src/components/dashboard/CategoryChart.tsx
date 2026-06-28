@@ -30,7 +30,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
   return (
     <Card>
       <h3 className="text-lg font-semibold text-text-primary mb-6">
-        Tickets by Category
+        Tiket Berdasarkan Kategori
       </h3>
       <div className="space-y-4">
         {categories.map((cat, i) => {

@@ -3,7 +3,7 @@ import type { CreateTicketDTO, Ticket, TicketNote, Role } from '@/types'
 
 export const ticketService = {
   async getTickets(role: Role, userId: string): Promise<Ticket[]> {
-    if (role === 'employee') {
+    if (role === 'karyawan') {
       return ticketRepo.getByReporter(userId)
     }
     return ticketRepo.getAll()
@@ -33,18 +33,18 @@ export const ticketService = {
   },
 
   canCreateTicket(role: Role): boolean {
-    return role === 'employee' || role === 'it_support'
+    return role === 'karyawan' || role === 'itsupport'
   },
 
   canUpdateStatus(role: Role): boolean {
-    return role === 'it_support'
+    return role === 'itsupport'
   },
 
   canAddNotes(role: Role): boolean {
-    return role === 'it_support'
+    return role === 'itsupport'
   },
 
   canViewAll(role: Role): boolean {
-    return role === 'it_support' || role === 'leader_it'
+    return role === 'itsupport' || role === 'leaderit'
   },
 }

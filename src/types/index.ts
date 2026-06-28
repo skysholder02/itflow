@@ -1,4 +1,4 @@
-export type Role = 'employee' | 'it_support' | 'leader_it'
+export type Role = 'karyawan' | 'itsupport' | 'leaderit'
 
 export type TicketCategory = 'Printer' | 'WiFi' | 'PC' | 'CCTV' | 'Speaker' | 'Other'
 export type TicketPriority = 'Critical' | 'High' | 'Medium' | 'Low'
@@ -32,6 +32,9 @@ export interface Ticket {
   category: TicketCategory
   priority: TicketPriority
   location: string
+  assetId?: string
+  assetName?: string
+  assetLocation?: string
   photo?: string
   reporterId: string
   reporterName: string
@@ -47,6 +50,9 @@ export interface CreateTicketDTO {
   category: TicketCategory
   priority: TicketPriority
   location: string
+  assetId?: string
+  assetName?: string
+  assetLocation?: string
   photo?: string
   reporterId: string
   reporterName: string

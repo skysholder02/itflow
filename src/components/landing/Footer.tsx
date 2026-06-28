@@ -7,10 +7,10 @@ export function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <Logo size="sm" />
           <p className="text-text-muted text-sm">
-            One Platform for All IT Services
+            Satu Platform untuk Semua Layanan IT
           </p>
           <p className="text-text-muted text-xs">
-            &copy; {new Date().getFullYear()} ITFlow. All rights reserved.
+            &copy; {new Date().getFullYear()} ITFlow. Hak cipta dilindungi.
           </p>
         </div>
       </div>

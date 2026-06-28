@@ -1,4 +1,10 @@
 import { cn } from '@/utils/cn'
+import {
+  formatAssetStatus,
+  formatRole,
+  formatTicketPriority,
+  formatTicketStatus,
+} from '@/utils/formatters'
 import type { TicketPriority, TicketStatus, AssetStatus } from '@/types'
 
 type BadgeVariant = 'priority' | 'status' | 'assetStatus' | 'role' | 'default'
@@ -29,22 +35,27 @@ const assetStatusColors: Record<AssetStatus, string> = {
 }
 
 const roleColors: Record<string, string> = {
-  employee: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  it_support: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  leader_it: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+  karyawan: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  itsupport: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  leaderit: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
 }
 
 export function Badge({ variant = 'default', value, className }: BadgeProps) {
   let colorClass = 'bg-white/10 text-text-secondary border-white/10'
+  let displayValue = value
 
   if (variant === 'priority') {
     colorClass = priorityColors[value as TicketPriority] ?? colorClass
+    displayValue = formatTicketPriority(value)
   } else if (variant === 'status') {
     colorClass = statusColors[value as TicketStatus] ?? colorClass
+    displayValue = formatTicketStatus(value)
   } else if (variant === 'assetStatus') {
     colorClass = assetStatusColors[value as AssetStatus] ?? colorClass
+    displayValue = formatAssetStatus(value)
   } else if (variant === 'role') {
     colorClass = roleColors[value] ?? colorClass
+    displayValue = formatRole(value)
   }
 
   return (
@@ -55,7 +66,7 @@ export function Badge({ variant = 'default', value, className }: BadgeProps) {
         className,
       )}
     >
-      {value}
+      {displayValue}
     </span>
   )
 }

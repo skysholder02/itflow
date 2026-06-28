@@ -5,10 +5,10 @@ import { Logo, Button } from '@/components/ui'
 import { cn } from '@/utils/cn'
 
 const navLinks = [
-  { label: 'Home', href: '#home' },
-  { label: 'Features', href: '#features' },
-  { label: 'Statistics', href: '#statistics' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Beranda', href: '#home' },
+  { label: 'Fitur', href: '#features' },
+  { label: 'Statistik', href: '#statistics' },
+  { label: 'Kontak', href: '#contact' },
 ]
 
 export function Navbar() {
@@ -59,14 +59,14 @@ export function Navbar() {
             Login
           </Button>
           <Button size="sm" onClick={() => navigate('/login')}>
-            Get Started
+            Mulai
           </Button>
         </div>
 
         <button
           className="md:hidden text-text-primary cursor-pointer"
           onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
+          aria-label="Buka menu"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             {mobileOpen ? (

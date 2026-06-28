@@ -56,9 +56,9 @@ export function TopBar({ onMenuClick }: TopBarProps) {
           </button>
           <div>
             <h1 className="text-lg font-semibold text-text-primary">
-              Welcome, {user?.name?.split(' ')[0]}
+              Selamat datang, {user?.name?.split(' ')[0]}
             </h1>
-            <p className="text-xs text-text-muted">IT Control Center</p>
+            <p className="text-xs text-text-muted">Pusat Kendali IT</p>
           </div>
         </div>
 

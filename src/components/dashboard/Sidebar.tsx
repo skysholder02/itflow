@@ -6,11 +6,11 @@ import { cn } from '@/utils/cn'
 import { sidebarSlide, sidebarSlideConfig } from '@/animations/variants'
 
 const menuItems = [
-  { label: 'Dashboard', path: '/dashboard', icon: '📊' },
-  { label: 'Tickets', path: '/tickets', icon: '🎫' },
-  { label: 'Assets', path: '/assets', icon: '💻' },
-  { label: 'QR Assets', path: '/qr-assets', icon: '📱' },
-  { label: 'Profile', path: '/profile', icon: '👤' },
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'Tiket', path: '/tickets' },
+  { label: 'Aset', path: '/assets' },
+  { label: 'QR Code', path: '/qr-assets' },
+  { label: 'Profile', path: '/profile' },
 ]
 
 interface SidebarProps {
@@ -30,7 +30,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const content = (
     <div className="flex flex-col h-full">
       <div className="p-6 border-b border-white/6">
-        <Logo size="sm" layoutId="itflow-logo" />
+        <Logo size="sm" />
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
@@ -41,14 +41,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             onClick={onClose}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all',
+                'flex items-center px-4 py-2.5 rounded-xl text-sm transition-all',
                 isActive
                   ? 'bg-brand-primary/20 text-brand-primary font-medium'
                   : 'text-text-muted hover:text-text-primary hover:bg-white/5',
               )
             }
           >
-            <span>{item.icon}</span>
             {item.label}
           </NavLink>
         ))}
@@ -57,9 +56,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       <div className="p-4 border-t border-white/6">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+          className="w-full flex items-center px-4 py-2.5 rounded-xl text-sm text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
         >
-          <span>🚪</span>
           Logout
         </button>
       </div>

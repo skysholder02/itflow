@@ -38,11 +38,11 @@ export function DashboardPage() {
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-text-primary">Dashboard</h2>
         <p className="text-text-muted text-sm mt-1">
-          {role === 'employee'
-            ? 'Your ticket overview'
-            : role === 'leader_it'
-              ? 'IT department statistics'
-              : 'All tickets overview'}
+          {role === 'karyawan'
+            ? 'Ringkasan tiket Anda'
+            : role === 'leaderit'
+              ? 'Statistik departemen IT'
+              : 'Ringkasan semua tiket'}
         </p>
       </div>
 
@@ -52,33 +52,13 @@ export function DashboardPage() {
         animate="animate"
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
       >
-        <StatWidget
-          label="Total Tickets"
-          value={stats.totalTickets}
-          icon="🎫"
-          color="from-brand-primary/30 to-brand-primary/10"
-        />
-        <StatWidget
-          label="Open Tickets"
-          value={stats.openTickets}
-          icon="📂"
-          color="from-blue-500/30 to-blue-500/10"
-        />
-        <StatWidget
-          label="Completed Tickets"
-          value={stats.completedTickets}
-          icon="✅"
-          color="from-green-500/30 to-green-500/10"
-        />
-        <StatWidget
-          label="Total Assets"
-          value={stats.totalAssets}
-          icon="💻"
-          color="from-brand-accent/30 to-brand-accent/10"
-        />
+        <StatWidget label="Total Tiket" value={stats.totalTickets} />
+        <StatWidget label="Tiket Terbuka" value={stats.openTickets} />
+        <StatWidget label="Tiket Selesai" value={stats.completedTickets} />
+        <StatWidget label="Total Aset" value={stats.totalAssets} />
       </motion.div>
 
-      {(role === 'it_support' || role === 'leader_it') && (
+      {(role === 'itsupport' || role === 'leaderit') && (
         <CategoryChart data={stats.ticketsByCategory} />
       )}
     </div>

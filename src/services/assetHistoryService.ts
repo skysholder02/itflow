@@ -6,6 +6,11 @@ export const assetHistoryService = {
     return assetHistoryRepo.getByAssetId(assetId)
   },
 
+  async getLastMaintenance(assetId: string): Promise<AssetHistory | null> {
+    const histories = await assetHistoryRepo.getByAssetId(assetId)
+    return histories[0] ?? null
+  },
+
   async create(data: CreateAssetHistoryDTO): Promise<AssetHistory> {
     return assetHistoryRepo.create(data)
   },
@@ -15,6 +20,6 @@ export const assetHistoryService = {
   },
 
   canManageHistory(role: Role): boolean {
-    return role === 'it_support'
+    return role === 'itsupport'
   },
 }

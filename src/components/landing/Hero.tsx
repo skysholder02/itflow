@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui'
-import { fadeUp } from '@/animations/variants'
+import { fadeUp, fadeUpTransition } from '@/animations/variants';
 
 export function Hero() {
   const navigate = useNavigate()
@@ -13,7 +13,7 @@ export function Hero() {
           variants={fadeUp}
           initial="initial"
           animate="animate"
-          transition={{ duration: 0.6 }}
+            transition={fadeUpTransition}
         >
           <h1 className="text-6xl md:text-8xl font-extrabold mb-4">
             <span className="bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent bg-clip-text text-transparent">
@@ -21,14 +21,14 @@ export function Hero() {
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-text-secondary mb-4 font-medium">
-            One Platform for All IT Services.
+            Satu platform untuk semua layanan IT.
           </p>
           <p className="text-text-muted max-w-2xl mx-auto mb-10 text-lg">
-            Manage IT Tickets, Monitor Assets and Track Infrastructure in one platform.
+            Kelola Tiket IT, pantau aset, dan lacak infrastruktur dalam satu platform.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button size="lg" onClick={() => navigate('/login')}>
-              Get Started
+              Mulai
             </Button>
             <Button variant="secondary" size="lg" onClick={() => navigate('/login')}>
               Login
@@ -45,8 +45,8 @@ export function Hero() {
           <div className="rounded-[20px] bg-bg-secondary/80 p-8 md:p-12">
             <div className="grid grid-cols-3 gap-4">
               {[
-                { label: 'Tickets', value: '248', color: 'from-brand-primary' },
-                { label: 'Assets', value: '156', color: 'from-brand-secondary' },
+                { label: 'Tiket', value: '248', color: 'from-brand-primary' },
+                { label: 'Aset', value: '156', color: 'from-brand-secondary' },
                 { label: 'Uptime', value: '99.9%', color: 'from-brand-accent' },
               ].map((stat) => (
                 <div key={stat.label} className="text-center">

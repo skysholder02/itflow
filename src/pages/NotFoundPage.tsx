@@ -11,8 +11,8 @@ export function NotFoundPage() {
         <h1 className="text-8xl font-bold bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent">
           404
         </h1>
-        <p className="text-text-muted mt-4 mb-8">Page not found</p>
-        <Button onClick={() => navigate('/')}>Go Home</Button>
+        <p className="text-text-muted mt-4 mb-8">Halaman tidak ditemukan</p>
+        <Button onClick={() => navigate('/')}>Beranda</Button>
       </div>
     </div>
   )

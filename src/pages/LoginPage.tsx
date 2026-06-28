@@ -1,5 +1,10 @@
 import { LoginForm } from '@/components/auth/LoginForm'
+import { PageTransition } from '@/components/ui'
 
 export function LoginPage() {
-  return <LoginForm />
+  return (
+    <PageTransition>
+      <LoginForm />
+    </PageTransition>
+  )
 }

@@ -5,12 +5,12 @@ import { z } from 'zod'
 import { motion } from 'framer-motion'
 import { Button, Input, Textarea, Card } from '@/components/ui'
 import { contactService } from '@/services/notificationService'
-import { fadeUp } from '@/animations/variants'
+import { fadeUp, fadeUpTransition } from '@/animations/variants';
 
 const schema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
+  name: z.string().min(2, 'Nama harus terdiri dari minimal 2 karakter'),
+  email: z.string().email('Format email tidak valid'),
+  message: z.string().min(10, 'Pesan harus terdiri dari minimal 10 karakter'),
 })
 
 type FormData = z.infer<typeof schema>
@@ -39,13 +39,14 @@ export function Contact() {
           initial="initial"
           whileInView="animate"
           viewport={{ once: true }}
+          transition={fadeUpTransition}
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-            Get in Touch
+            Hubungi Kami
           </h2>
           <p className="text-text-muted">
-            Have questions? We&apos;d love to hear from you.
+            Ada pertanyaan? Kami ingin mendengar dari Anda.
           </p>
         </motion.div>
 
@@ -57,20 +58,19 @@ export function Contact() {
           <Card>
             {submitted ? (
               <div className="text-center py-8">
-                <div className="text-4xl mb-4">✓</div>
                 <h3 className="text-lg font-semibold text-text-primary mb-2">
-                  Message Sent!
+                  Pesan Terkirim!
                 </h3>
                 <p className="text-text-muted text-sm">
-                  Thank you for reaching out. We&apos;ll get back to you soon.
+                  Terima kasih telah menghubungi kami. Kami akan segera merespon.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <Input
-                  label="Name"
+                  label="Nama"
                   id="name"
-                  placeholder="Your name"
+                  placeholder="Nama Anda"
                   error={errors.name?.message}
                   {...register('name')}
                 />
@@ -78,19 +78,19 @@ export function Contact() {
                   label="Email"
                   id="email"
                   type="email"
-                  placeholder="you@company.com"
+                  placeholder="email@perusahaan.com"
                   error={errors.email?.message}
                   {...register('email')}
                 />
                 <Textarea
-                  label="Message"
+                  label="Pesan"
                   id="message"
-                  placeholder="How can we help?"
+                  placeholder="Bagaimana kami bisa membantu?"
                   error={errors.message?.message}
                   {...register('message')}
                 />
                 <Button type="submit" loading={isSubmitting} className="w-full">
-                  Send Message
+                  Kirim Pesan
                 </Button>
               </form>
             )}

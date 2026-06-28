@@ -34,7 +34,7 @@ export function AppRoutes() {
         <Route
           path="/tickets/create"
           element={
-            <RoleGuard allowedRoles={['employee', 'it_support']}>
+            <RoleGuard allowedRoles={['karyawan', 'itsupport']}>
               <CreateTicketPage />
             </RoleGuard>
           }

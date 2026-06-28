@@ -2,17 +2,16 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button, Input, Card, Logo, GlowBackground } from '@/components/ui'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTransition } from '@/contexts/TransitionContext'
 import { DEMO_ACCOUNTS } from '@/data/demoAccounts'
-import { fadeUp } from '@/animations/variants'
+import { fadeUp, fadeUpTransition } from '@/animations/variants'
 
 const schema = z.object({
-  email: z.string().email('Invalid email'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email('Format email tidak valid'),
+  password: z.string().min(1, 'Kata Sandi wajib diisi'),
 })
 
 type FormData = z.infer<typeof schema>
@@ -20,7 +19,6 @@ type FormData = z.infer<typeof schema>
 export function LoginForm() {
   const { login } = useAuth()
   const { startTransition } = useTransition()
-  const navigate = useNavigate()
   const [error, setError] = useState('')
   const {
     register,
@@ -34,9 +32,8 @@ export function LoginForm() {
       setError('')
       await login(data.email, data.password)
       startTransition()
-      navigate('/dashboard')
     } catch {
-      setError('Invalid email or password')
+      setError('Email atau kata sandi salah')
     }
   }
 
@@ -48,29 +45,30 @@ export function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center relative p-6">
       <GlowBackground />
-      <motion.div
-        variants={fadeUp}
-        initial="initial"
-        animate="animate"
-        className="w-full max-w-md relative z-10"
-      >
+<motion.div
+  variants={fadeUp}
+  initial="initial"
+  animate="animate"
+  transition={fadeUpTransition}
+  className="w-full max-w-md relative z-10"
+>
         <div className="text-center mb-8">
           <Logo size="lg" className="justify-center" />
-          <p className="text-text-muted mt-4">Sign in to your account</p>
+          <p className="text-text-muted mt-4">Masuk ke akun Anda</p>
         </div>
 
         <Card>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <Input
+                label="Email"
+                id="email"
+                type="email"
+                placeholder="email@perusahaan.com"
+                error={errors.email?.message}
+                {...register('email')}
+              />
             <Input
-              label="Email"
-              id="email"
-              type="email"
-              placeholder="you@company.com"
-              error={errors.email?.message}
-              {...register('email')}
-            />
-            <Input
-              label="Password"
+              label="Kata Sandi"
               id="password"
               type="password"
               placeholder="••••••••"
@@ -81,12 +79,12 @@ export function LoginForm() {
               <p className="text-sm text-red-400 text-center">{error}</p>
             )}
             <Button type="submit" loading={isSubmitting} className="w-full">
-              Sign In
+              Login
             </Button>
           </form>
 
           <div className="mt-6 pt-6 border-t border-white/6">
-            <p className="text-xs text-text-muted text-center mb-3">Demo Accounts</p>
+            <p className="text-xs text-text-muted text-center mb-3">Akun Demo</p>
             <div className="space-y-2">
               {DEMO_ACCOUNTS.map((account) => (
                 <button

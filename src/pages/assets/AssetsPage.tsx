@@ -8,7 +8,7 @@ import QRCode from 'react-qr-code'
 import { Button, Badge, Card, Input, Select, Modal, SkeletonList, EmptyState } from '@/components/ui'
 import { assetService } from '@/services/assetService'
 import { useAuth } from '@/contexts/AuthContext'
-import { getAssetUrl } from '@/utils/formatters'
+import { getAssetUrl, formatAssetCategory, formatAssetStatus } from '@/utils/formatters'
 import type { Asset, AssetCategory, AssetStatus } from '@/types'
 
 const schema = z.object({
@@ -84,7 +84,7 @@ export function AssetsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('Delete this asset?')) {
+    if (confirm('Hapus aset ini?')) {
       await assetService.deleteAsset(id)
       loadAssets()
     }
@@ -103,14 +103,14 @@ export function AssetsPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-text-primary">Assets</h2>
-          <p className="text-text-muted text-sm mt-1">Manage IT infrastructure assets</p>
+          <h2 className="text-2xl font-bold text-text-primary">Aset</h2>
+          <p className="text-text-muted text-sm mt-1">Kelola aset infrastruktur IT</p>
         </div>
-        {canManage && <Button onClick={openCreate}>Add Asset</Button>}
+        {canManage && <Button onClick={openCreate}>Tambah Aset</Button>}
       </div>
 
       <Input
-        placeholder="Search assets..."
+        placeholder="Cari aset..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="mb-6"
@@ -118,10 +118,9 @@ export function AssetsPage() {
 
       {filtered.length === 0 ? (
         <EmptyState
-          icon="💻"
-          title="No assets found"
-          description="Add your first asset to get started."
-          actionLabel={canManage ? 'Add Asset' : undefined}
+          title="Tidak ada aset ditemukan"
+          description="Tambah aset pertama untuk memulai."
+          actionLabel={canManage ? 'Tambah Aset' : undefined}
           onAction={canManage ? openCreate : undefined}
         />
       ) : (
@@ -139,7 +138,7 @@ export function AssetsPage() {
                   <Badge variant="assetStatus" value={asset.status} />
                 </div>
                 <h3 className="font-semibold text-text-primary mb-1">{asset.name}</h3>
-                <p className="text-sm text-text-muted">{asset.brand} · {asset.category}</p>
+                <p className="text-sm text-text-muted">{asset.brand} · {formatAssetCategory(asset.category)}</p>
                 <p className="text-xs text-text-muted mt-2">{asset.location}</p>
                 {canManage && (
                   <div className="flex gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
@@ -147,7 +146,7 @@ export function AssetsPage() {
                       Edit
                     </Button>
                     <Button size="sm" variant="danger" onClick={() => handleDelete(asset.id)}>
-                      Delete
+                      Hapus
                     </Button>
                   </div>
                 )}
@@ -160,29 +159,29 @@ export function AssetsPage() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? 'Edit Asset' : 'Add Asset'}
+        title={editing ? 'Edit Aset' : 'Tambah Aset'}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Input label="Name" error={errors.name?.message} {...register('name')} />
-          <Input label="Brand" error={errors.brand?.message} {...register('brand')} />
-          <Input label="Serial Number" error={errors.serialNumber?.message} {...register('serialNumber')} />
-          <Input label="Location" error={errors.location?.message} {...register('location')} />
+          <Input label="Nama" error={errors.name?.message} {...register('name')} />
+          <Input label="Merek" error={errors.brand?.message} {...register('brand')} />
+          <Input label="Nomor Serial" error={errors.serialNumber?.message} {...register('serialNumber')} />
+          <Input label="Lokasi" error={errors.location?.message} {...register('location')} />
           <Select
-            label="Category"
-            options={categories.map((c) => ({ value: c, label: c }))}
+            label="Kategori"
+            options={categories.map((c) => ({ value: c, label: formatAssetCategory(c) }))}
             {...register('category')}
           />
           <Select
             label="Status"
-            options={statuses.map((s) => ({ value: s, label: s }))}
+            options={statuses.map((s) => ({ value: s, label: formatAssetStatus(s) }))}
             {...register('status')}
           />
           <div className="flex gap-3">
             <Button type="submit" loading={isSubmitting}>
-              {editing ? 'Update' : 'Create'}
+              {editing ? 'Perbarui' : 'Buat'}
             </Button>
             <Button variant="ghost" type="button" onClick={() => setModalOpen(false)}>
-              Cancel
+              Batal
             </Button>
           </div>
         </form>
