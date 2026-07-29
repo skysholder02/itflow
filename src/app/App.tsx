@@ -9,12 +9,15 @@ const getTransitionKey = (pathname: string) => {
   if (pathname.match(/^\/assets\/[^/]+$/)) {
     return pathname
   }
+  // All dashboard routes should use the same key to prevent layout remount
   if (
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/tickets') ||
     pathname.startsWith('/assets') ||
     pathname.startsWith('/qr-assets') ||
-    pathname.startsWith('/profile')
+    pathname.startsWith('/profile') ||
+    pathname.startsWith('/vendor/') ||
+    pathname.startsWith('/leader/')
   ) {
     return 'dashboard-layout'
   }

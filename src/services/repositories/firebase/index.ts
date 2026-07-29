@@ -8,6 +8,7 @@ export const firebaseUserRepo = {
   getAll: notConfigured,
   getById: notConfigured,
   getByEmail: notConfigured,
+  create: notConfigured,
   update: notConfigured,
 }
 
@@ -50,4 +51,12 @@ export const firebaseSessionRepo = {
 
 export const firebaseContactRepo = {
   submit: notConfigured,
+}
+
+export const firebaseJobRepo = {
+  getAll: notConfigured,
+  getById: notConfigured,
+  getByVendor: notConfigured,
+  create: notConfigured,
+  update: notConfigured,
 }

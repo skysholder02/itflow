@@ -9,12 +9,14 @@ import type {
   Notification,
   TicketNote,
   Session,
+  Job,
 } from '@/types'
 
 export interface IUserRepository {
   getAll(): Promise<User[]>
   getById(id: string): Promise<User | null>
   getByEmail(email: string): Promise<User | null>
+  create(data: Omit<User, 'id'>): Promise<User>
   update(id: string, data: Partial<User>): Promise<User>
 }
 
@@ -57,4 +59,12 @@ export interface ISessionRepository {
 
 export interface IContactRepository {
   submit(data: { name: string; email: string; message: string }): Promise<void>
+}
+
+export interface IJobRepository {
+  getAll(): Promise<Job[]>
+  getById(id: string): Promise<Job | null>
+  getByVendor(vendorId: string): Promise<Job[]>
+  create(data: Omit<Job, 'id'>): Promise<Job>
+  update(id: string, data: Partial<Job>): Promise<Job>
 }

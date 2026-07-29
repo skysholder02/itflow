@@ -5,6 +5,7 @@ import { localAssetHistoryRepo } from './local/assetHistoryRepository'
 import { localNotificationRepo } from './local/notificationRepository'
 import { localSessionRepo } from './local/sessionRepository'
 import { localContactRepo } from './local/contactRepository'
+import { localJobRepo } from './local/jobRepository'
 import {
   firebaseUserRepo,
   firebaseTicketRepo,
@@ -13,6 +14,7 @@ import {
   firebaseNotificationRepo,
   firebaseSessionRepo,
   firebaseContactRepo,
+  firebaseJobRepo,
 } from './firebase'
 
 const provider = import.meta.env.VITE_DATA_PROVIDER ?? 'local'
@@ -25,3 +27,4 @@ export const assetHistoryRepo = useFirebase ? firebaseAssetHistoryRepo : localAs
 export const notificationRepo = useFirebase ? firebaseNotificationRepo : localNotificationRepo
 export const sessionRepo = useFirebase ? firebaseSessionRepo : localSessionRepo
 export const contactRepo = useFirebase ? firebaseContactRepo : localContactRepo
+export const jobRepo = useFirebase ? firebaseJobRepo : localJobRepo

@@ -17,4 +17,10 @@ export const DEMO_ACCOUNTS = [
     label: 'LeaderIT',
     role: 'leaderit' as const,
   },
+  {
+    email: 'vendor@itflow.demo',
+    password: 'demo123',
+    label: 'Vendor',
+    role: 'vendor' as const,
+  },
 ]

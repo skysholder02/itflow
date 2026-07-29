@@ -5,10 +5,18 @@ import { TopBar } from '@/components/dashboard/TopBar'
 import { GlowBackground } from '@/components/ui'
 import { PageTransition } from '@/components/ui'
 import { AnimatePresence } from 'framer-motion'
+import { useAuth } from '@/contexts/AuthContext'
+import { VendorStatusScreen } from '@/components/vendor/VendorStatusScreen'
+import { isVendorDashboardBlocked, resolveVendorStatus } from '@/utils/vendorStatus'
 
 export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
+  const { user } = useAuth()
+
+  if (user?.role === 'vendor' && isVendorDashboardBlocked(resolveVendorStatus(user))) {
+    return <VendorStatusScreen />
+  }
 
   return (
     <div className="flex min-h-screen relative">

@@ -5,27 +5,51 @@ import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/utils/cn'
 import { sidebarSlide, sidebarSlideConfig } from '@/animations/variants'
 
-const menuItems = [
-  { label: 'Dashboard', path: '/dashboard' },
-  { label: 'Tiket', path: '/tickets' },
-  { label: 'Aset', path: '/assets' },
-  { label: 'QR Code', path: '/qr-assets' },
-  { label: 'Profile', path: '/profile' },
-]
-
 interface SidebarProps {
   open: boolean
   onClose: () => void
 }
 
 export function Sidebar({ open, onClose }: SidebarProps) {
-  const { logout } = useAuth()
+  const { logout, role } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
     await logout()
     navigate('/')
   }
+
+  const getMenuItems = () => {
+    if (role === 'vendor') {
+      return [
+        { label: 'Dashboard', path: '/dashboard' },
+        { label: 'My Jobs', path: '/vendor/jobs' },
+        { label: 'Timeline', path: '/vendor/timeline' },
+        { label: 'Material Notes', path: '/vendor/materials' },
+        { label: 'Documentation', path: '/vendor/documentation' },
+        { label: 'Profile', path: '/profile' },
+      ]
+    }
+
+    const items = [
+      { label: 'Dashboard', path: '/dashboard' },
+      { label: 'Tiket', path: '/tickets' },
+      { label: 'Aset', path: '/assets' },
+      { label: 'QR Code', path: '/qr-assets' },
+    ]
+
+    if (role === 'leaderit') {
+      items.push({ label: 'User Management', path: '/leader/users' })
+    }
+    if (role === 'leaderit' || role === 'itsupport') {
+      items.push({ label: 'Pekerjaan Vendor', path: '/leader/jobs' })
+    }
+
+    items.push({ label: 'Profile', path: '/profile' })
+    return items
+  }
+
+  const items = getMenuItems()
 
   const content = (
     <div className="flex flex-col h-full">
@@ -34,7 +58,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
-        {menuItems.map((item) => (
+        {items.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
@@ -66,10 +90,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
   return (
     <>
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar - animates only when DashboardLayout mounts */}
       <motion.aside
-        initial={{ x: '-100%' }}
-        animate={{ x: 0 }}
+        initial={{ x: '-100%', opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
         transition={sidebarSlideConfig}
         className="hidden lg:flex w-64 flex-shrink-0 bg-bg-secondary/60 border-r border-white/6 backdrop-blur-xl flex-col h-screen sticky top-0"
       >

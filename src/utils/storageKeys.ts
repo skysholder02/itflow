@@ -7,4 +7,5 @@ export const STORAGE_KEYS = {
   SESSION: 'itflow_session',
   SEEDED: 'itflow_seeded',
   CONTACT: 'itflow_contact_submissions',
+  JOBS: 'itflow_jobs',
 } as const

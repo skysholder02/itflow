@@ -7,6 +7,7 @@ import { statsService } from '@/services/statsService'
 import { useAuth } from '@/contexts/AuthContext'
 import { cardStaggerContainer } from '@/animations/variants'
 import type { DashboardStats } from '@/types'
+import { VendorDashboard } from '@/components/vendor/VendorDashboard'
 
 export function DashboardPage() {
   const { role, user } = useAuth()
@@ -15,11 +16,19 @@ export function DashboardPage() {
 
   useEffect(() => {
     if (!role || !user) return
+    if (role === 'vendor') {
+      setLoading(false)
+      return
+    }
     statsService
       .getDashboardStats(role, user.id)
       .then(setStats)
       .finally(() => setLoading(false))
   }, [role, user])
+
+  if (role === 'vendor') {
+    return <VendorDashboard />
+  }
 
   if (loading) {
     return (

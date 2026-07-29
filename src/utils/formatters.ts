@@ -21,8 +21,31 @@ export function formatRole(role: string): string {
     karyawan: 'Karyawan',
     itsupport: 'ITSupport',
     leaderit: 'LeaderIT',
+    vendor: 'Vendor',
   }
   return map[role] ?? role
+}
+
+export function formatVendorStatus(status: string): string {
+  const map: Record<string, string> = {
+    PendingApproval: 'Pending Approval',
+    Active: 'Active',
+    Expired: 'Expired',
+    Archived: 'Archived',
+  }
+  return map[status] ?? status
+}
+
+export function formatJobStatus(status: string): string {
+  const map: Record<string, string> = {
+    Pending: 'Menunggu',
+    Approved: 'Disetujui',
+    'In Progress': 'Dalam Proses',
+    'Need Extension': 'Butuh Perpanjangan',
+    Completed: 'Selesai',
+    Cancelled: 'Dibatalkan',
+  }
+  return map[status] ?? status
 }
 
 export function formatTicketStatus(status: string): string {

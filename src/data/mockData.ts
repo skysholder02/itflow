@@ -4,9 +4,13 @@ import type {
   Asset,
   AssetHistory,
   Notification,
+  Job,
 } from '@/types'
 
 export const seedUsers: User[] = [
+  // ============================================
+  // ACTIVE ACCOUNTS (Demo accounts for testing)
+  // ============================================
   {
     id: 'usr-001',
     email: 'employee@itflow.demo',
@@ -14,6 +18,7 @@ export const seedUsers: User[] = [
     name: 'Karyawan 1',
     role: 'karyawan',
     department: 'Produksi',
+    status: 'Active',
   },
   {
     id: 'usr-002',
@@ -22,6 +27,7 @@ export const seedUsers: User[] = [
     name: 'ITSupport',
     role: 'itsupport',
     department: 'Departemen IT',
+    status: 'Active',
   },
   {
     id: 'usr-003',
@@ -30,6 +36,7 @@ export const seedUsers: User[] = [
     name: 'LeaderIT',
     role: 'leaderit',
     department: 'Kepemimpinan IT',
+    status: 'Active',
   },
   {
     id: 'usr-004',
@@ -38,6 +45,123 @@ export const seedUsers: User[] = [
     name: 'Karyawan 2',
     role: 'karyawan',
     department: 'Gudang',
+    status: 'Active',
+  },
+  {
+    id: 'usr-005',
+    email: 'vendor@itflow.demo',
+    password: 'demo123',
+    name: 'Vendor Utama',
+    role: 'vendor',
+    department: 'Vendor Eksternal',
+    status: 'Active',
+    vendorStatus: 'Active',
+    vendorExpiryDate: '2027-01-01',
+    vendorCompany: 'PT Solusi Teknologi Nusantara',
+    vendorPIC: 'Rian Wijaya',
+    vendorPhone: '081234567890',
+    vendorWorkerCount: 3,
+    vendorWorkersList: [
+      { name: 'Rian', position: 'Supervisor', phone: '081234567891' },
+      { name: 'Andi', position: 'Teknisi', phone: '081234567892' },
+      { name: 'Dika', position: 'Teknisi', phone: '081234567893' },
+    ],
+    vendorTimeline: [
+      { id: 'vtl-1', timestamp: '2026-07-15T09:00:00Z', activity: 'Registrasi akun vendor diajukan' },
+      { id: 'vtl-2', timestamp: '2026-07-15T10:00:00Z', activity: 'Akun disetujui oleh Leader IT. Masa aktif hingga 2027-01-01' }
+    ],
+    vendorExtensionRequests: []
+  },
+
+  // ============================================
+  // PENDING APPROVAL ACCOUNTS (For demonstration)
+  // ============================================
+  {
+    id: 'usr-101',
+    email: 'employee.pending@itflow.demo',
+    password: 'demo123',
+    name: 'Employee Baru',
+    role: 'karyawan',
+    department: 'Marketing',
+    status: 'PendingApproval',
+  },
+  {
+    id: 'usr-102',
+    email: 'itsupport.pending@itflow.demo',
+    password: 'demo123',
+    name: 'IT Support Baru',
+    role: 'itsupport',
+    department: 'Departemen IT',
+    status: 'PendingApproval',
+  },
+  {
+    id: 'usr-103',
+    email: 'vendor.pending@itflow.demo',
+    password: 'demo123',
+    name: 'Vendor Baru',
+    role: 'vendor',
+    department: 'Vendor Eksternal',
+    status: 'PendingApproval',
+    vendorStatus: 'PendingApproval',
+    vendorCompany: 'PT Teknologi Maju',
+    vendorPIC: 'Budi Santoso',
+    vendorPhone: '082345678901',
+    vendorWorkerCount: 2,
+    vendorWorkersList: [],
+    vendorTimeline: [
+      { id: 'vtl-3', timestamp: '2026-07-19T09:00:00Z', activity: 'Registrasi akun vendor diajukan (PendingApproval)' }
+    ],
+    vendorExtensionRequests: []
+  },
+
+  // ============================================
+  // EXPIRED ACCOUNTS (For demonstration)
+  // ============================================
+  {
+    id: 'usr-201',
+    email: 'vendor.expired@itflow.demo',
+    password: 'demo123',
+    name: 'Vendor Lama',
+    role: 'vendor',
+    department: 'Vendor Eksternal',
+    status: 'Expired',
+    vendorStatus: 'Expired',
+    vendorExpiryDate: '2026-06-01',
+    vendorCompany: 'CV Jaya Makmur',
+    vendorPIC: 'Agus Pratama',
+    vendorPhone: '083456789012',
+    vendorWorkerCount: 5,
+    vendorWorkersList: [],
+    vendorTimeline: [
+      { id: 'vtl-4', timestamp: '2025-12-01T09:00:00Z', activity: 'Registrasi akun vendor diajukan' },
+      { id: 'vtl-5', timestamp: '2025-12-01T10:00:00Z', activity: 'Akun disetujui. Masa aktif hingga 2026-06-01' },
+      { id: 'vtl-6', timestamp: '2026-06-02T00:00:00Z', activity: 'Masa aktif akun habis (Expired)' }
+    ],
+    vendorExtensionRequests: []
+  },
+  {
+    id: 'usr-202',
+    email: 'employee.expired@itflow.demo',
+    password: 'demo123',
+    name: 'Employee Contract Ended',
+    role: 'karyawan',
+    department: 'Produksi',
+    status: 'Expired',
+  },
+
+  // ============================================
+  // ARCHIVED ACCOUNTS (For demonstration)
+  // ============================================
+  {
+    id: 'usr-301',
+    email: 'itsupport.archived@itflow.demo',
+    password: 'demo123',
+    name: 'IT Support Lama',
+    role: 'itsupport',
+    department: 'Departemen IT',
+    status: 'Archived',
+    rejectReason: 'Posisi sudah terisi. Silakan hubungi HRD untuk informasi lowongan lain.',
+    rejectWhatsApp: '081234567899',
   },
 ]
 
@@ -365,4 +489,158 @@ export const seedNotifications: Notification[] = [
     read: false,
     createdAt: '2026-06-20T09:35:00Z',
   },
+]
+
+export const seedJobs: Job[] = [
+  {
+    id: 'JOB-001',
+    title: 'Install CCTV Warehouse',
+    description: 'Pemasangan 4 unit kamera CCTV resolusi tinggi di area gudang penyimpanan produk sensitif untuk meningkatkan pengawasan.',
+    location: 'Gudang A - Area Belakang',
+    deadline: '2026-07-20',
+    status: 'In Progress',
+    vendorId: 'usr-005',
+    vendorName: 'Vendor Utama',
+    vendorPIC: 'Rian Wijaya',
+    vendorPhone: '081234567890',
+    itSupportId: 'usr-002',
+    itSupportName: 'ITSupport',
+    leaderId: 'usr-003',
+    leaderName: 'LeaderIT',
+    workers: [
+      { name: 'Rian', position: 'Supervisor', phone: '081234567891', present: true },
+      { name: 'Andi', position: 'Teknisi', phone: '081234567892', present: true },
+      { name: 'Dika', position: 'Teknisi', phone: '081234567893', present: false },
+    ],
+    timeline: [
+      { id: 'tl-1', time: '09.00', activity: 'Pekerjaan dibuat oleh Leader IT LeaderIT' },
+      { id: 'tl-2', time: '09.15', activity: 'Vendor disetujui untuk memulai pekerjaan' },
+      { id: 'tl-3', time: '09.30', activity: 'Vendor mulai bekerja' },
+      { id: 'tl-4', time: '10.00', activity: 'Material ditambahkan: Bracket CCTV (4 pcs)' }
+    ],
+    documentation: [
+      {
+        id: 'doc-1',
+        type: 'Before',
+        photoUrl: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=400&q=80',
+        uploadedBy: 'Vendor Utama',
+        uploadedAt: '2026-07-15T09:40:00Z'
+      }
+    ],
+    materials: [
+      {
+        id: 'mat-1',
+        materialName: 'Bracket CCTV',
+        quantity: 4,
+        unit: 'pcs',
+        notes: 'Untuk pemasangan CCTV di plafon',
+        addedBy: 'Vendor Utama',
+        createdAt: '2026-07-15T10:00:00Z'
+      }
+    ],
+    extensionRequests: [],
+    ratings: []
+  },
+  {
+    id: 'JOB-002',
+    title: 'Install Speaker Meeting Room',
+    description: 'Pemasangan sistem tata suara nirkabel di ruang pertemuan utama lantai 3 untuk kebutuhan video conference.',
+    location: 'Gedung Utama - Meeting Room Lt. 3',
+    deadline: '2026-07-18',
+    status: 'Pending',
+    vendorId: 'usr-005',
+    vendorName: 'Vendor Utama',
+    vendorPIC: 'Rian Wijaya',
+    vendorPhone: '081234567890',
+    itSupportId: 'usr-002',
+    itSupportName: 'ITSupport',
+    leaderId: 'usr-003',
+    leaderName: 'LeaderIT',
+    workers: [
+      { name: 'Rian', position: 'Supervisor', phone: '081234567891' },
+      { name: 'Andi', position: 'Teknisi', phone: '081234567892' },
+      { name: 'Dika', position: 'Teknisi', phone: '081234567893' },
+    ],
+    timeline: [
+      { id: 'tl-5', time: '08.00', activity: 'Pekerjaan dibuat oleh Leader IT LeaderIT' }
+    ],
+    documentation: [],
+    materials: [],
+    extensionRequests: [],
+    ratings: []
+  },
+  {
+    id: 'JOB-003',
+    title: 'Install Access Point Office',
+    description: 'Instalasi access point WiFi Aruba AP-303 untuk mengganti perangkat lama di area office IT Flow.',
+    location: 'Gedung B - Ruang Office',
+    deadline: '2026-07-16',
+    status: 'Completed',
+    vendorId: 'usr-005',
+    vendorName: 'Vendor Utama',
+    vendorPIC: 'Rian Wijaya',
+    vendorPhone: '081234567890',
+    itSupportId: 'usr-002',
+    itSupportName: 'ITSupport',
+    leaderId: 'usr-003',
+    leaderName: 'LeaderIT',
+    workers: [
+      { name: 'Rian', position: 'Supervisor', phone: '081234567891', present: true },
+      { name: 'Andi', position: 'Teknisi', phone: '081234567892', present: true },
+    ],
+    timeline: [
+      { id: 'tl-6', time: '09.00', activity: 'Pekerjaan dibuat oleh Leader IT LeaderIT' },
+      { id: 'tl-7', time: '09.30', activity: 'Vendor mulai bekerja' },
+      { id: 'tl-8', time: '10.30', activity: 'Material ditambahkan: LAN Cable Cat6 (20 Meter)' },
+      { id: 'tl-9', time: '10.32', activity: 'Material ditambahkan: RJ45 (10 pcs)' },
+      { id: 'tl-10', time: '11.00', activity: 'Foto progress diupload (After) oleh Vendor Utama' },
+      { id: 'tl-11', time: '11.30', activity: 'Job Completed' }
+    ],
+    documentation: [
+      {
+        id: 'doc-2',
+        type: 'After',
+        photoUrl: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=400&q=80',
+        uploadedBy: 'Vendor Utama',
+        uploadedAt: '2026-07-15T11:00:00Z'
+      }
+    ],
+    materials: [
+      {
+        id: 'mat-2',
+        materialName: 'LAN Cable Cat6',
+        quantity: 20,
+        unit: 'Meter',
+        notes: 'Kabel untuk drop-down ke AP',
+        addedBy: 'Vendor Utama',
+        createdAt: '2026-07-15T10:30:00Z'
+      },
+      {
+        id: 'mat-3',
+        materialName: 'RJ45',
+        quantity: 10,
+        unit: 'pcs',
+        notes: 'Konektor untuk kabel LAN',
+        addedBy: 'Vendor Utama',
+        createdAt: '2026-07-15T10:32:00Z'
+      }
+    ],
+    extensionRequests: [],
+    ratings: [
+      {
+        rating: 5,
+        comment: 'Pekerjaan sangat cepat dan rapi. IT Support mendampingi dengan baik.',
+        date: '2026-07-15T11:35:00Z',
+        byRole: 'vendor',
+        isPublic: true
+      },
+      {
+        rating: 5,
+        comment: 'Vendor sangat profesional dan tepat waktu.',
+        date: '2026-07-15T11:40:00Z',
+        byRole: 'itsupport',
+        isPublic: true
+      }
+    ]
+  }
 ]

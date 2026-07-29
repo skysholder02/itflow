@@ -6,43 +6,38 @@ import {
   type ReactNode,
 } from 'react'
 
-type TransitionPhase =
-  | 'idle'
-  | 'zoomBlur'
-  | 'doorsClose'
-  | 'doorsOpen'
-  | 'reveal'
-  | 'complete'
-
 interface TransitionContextType {
-  phase: TransitionPhase
-  isTransitioning: boolean
+  isActive: boolean
   startTransition: () => void
-  setPhase: (phase: TransitionPhase) => void
-  completeTransition: () => void
+  endTransition: () => void
+  transitionId: number
 }
 
 const TransitionContext = createContext<TransitionContextType | null>(null)
 
 export function TransitionProvider({ children }: { children: ReactNode }) {
-  const [phase, setPhase] = useState<TransitionPhase>('idle')
+  const [isActive, setIsActive] = useState(false)
+  const [transitionId, setTransitionId] = useState(0)
 
   const startTransition = useCallback(() => {
-    setPhase('zoomBlur')
+    setIsActive(prev => {
+      if (prev) return prev
+      setTransitionId(id => id + 1)
+      return true
+    })
   }, [])
 
-  const completeTransition = useCallback(() => {
-    setPhase('idle')
+  const endTransition = useCallback(() => {
+    setIsActive(false)
   }, [])
 
   return (
     <TransitionContext.Provider
       value={{
-        phase,
-        isTransitioning: phase !== 'idle',
+        isActive,
         startTransition,
-        setPhase,
-        completeTransition,
+        endTransition,
+        transitionId,
       }}
     >
       {children}
