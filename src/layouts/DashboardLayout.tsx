@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { TopBar } from '@/components/dashboard/TopBar'
@@ -6,6 +6,7 @@ import { GlowBackground } from '@/components/ui'
 import { PageTransition } from '@/components/ui'
 import { AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTransition } from '@/contexts/TransitionContext'
 import { VendorStatusScreen } from '@/components/vendor/VendorStatusScreen'
 import { isVendorDashboardBlocked, resolveVendorStatus } from '@/utils/vendorStatus'
 
@@ -13,6 +14,18 @@ export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
   const { user } = useAuth()
+  const { isActive, signalDashboardReady } = useTransition()
+
+  const handlePageAnimationComplete = useCallback(() => {
+    if (isActive) signalDashboardReady()
+  }, [isActive, signalDashboardReady])
+
+  // If vendor is blocked, there's no entrance animation to wait for.
+  useEffect(() => {
+    if (user?.role === 'vendor' && isVendorDashboardBlocked(resolveVendorStatus(user)) && isActive) {
+      signalDashboardReady()
+    }
+  }, [user, isActive, signalDashboardReady])
 
   if (user?.role === 'vendor' && isVendorDashboardBlocked(resolveVendorStatus(user))) {
     return <VendorStatusScreen />
@@ -26,7 +39,7 @@ export function DashboardLayout() {
         <TopBar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 p-6 overflow-auto">
           <AnimatePresence mode="wait">
-            <PageTransition key={location.pathname}>
+            <PageTransition key={location.pathname} onAnimationComplete={handlePageAnimationComplete}>
               <Outlet />
             </PageTransition>
           </AnimatePresence>

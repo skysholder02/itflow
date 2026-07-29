@@ -97,13 +97,13 @@ export const buttonHoverTransition: Transition = {
 
 // ---------- DOOR ----------
 export const doorLeft: Variants = {
-  closed: { x: 0 },
-  open: { x: '-100%' },
+  closed: { x: 0, filter: 'blur(0px)' },
+  open: { x: '-100%', filter: 'blur(2px)' },
 }
 
 export const doorRight: Variants = {
-  closed: { x: 0 },
-  open: { x: '100%' },
+  closed: { x: 0, filter: 'blur(0px)' },
+  open: { x: '100%', filter: 'blur(2px)' },
 }
 
 export const doorTransition: Transition = {

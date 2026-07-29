@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Logo } from '@/components/ui'
 
@@ -20,30 +20,23 @@ interface MobileTransitionProps {
 
 export function MobileTransition({ onFinish, onWorkspaceReady, shouldProceed }: MobileTransitionProps) {
   const [step, setStep] = useState<Step>('fadeIn')
-  const [checkedCount, setCheckedCount] = useState(0)
+  const [checkedIndices, setCheckedIndices] = useState<Set<number>>(new Set())
   const [workspaceReady, setWorkspaceReady] = useState(false)
 
-  // Timer-driven step progression.
-  useEffect(() => {
-    const timers: ReturnType<typeof setTimeout>[] = []
+  const stepRef = useRef(step)
+  stepRef.current = step
 
-    if (step === 'fadeIn') {
-      timers.push(setTimeout(() => setStep('workspaceInit'), 600))
-    } else if (step === 'workspaceInit') {
-      timers.push(setTimeout(() => setCheckedCount(1), 200))
-      timers.push(setTimeout(() => setCheckedCount(2), 400))
-      timers.push(setTimeout(() => setCheckedCount(3), 600))
-      timers.push(setTimeout(() => setCheckedCount(4), 800))
-      timers.push(setTimeout(() => setCheckedCount(5), 1000))
-      timers.push(setTimeout(() => setWorkspaceReady(true), 1200))
-    } else if (step === 'softBlur') {
-      timers.push(setTimeout(() => setStep('fadeOut'), 500))
-    } else if (step === 'fadeOut') {
-      timers.push(setTimeout(() => onFinish(), 600))
+  // Advance step when content animation finishes.
+  const onContentAnimationComplete = useCallback(() => {
+    const s = stepRef.current
+    if (s === 'fadeIn') {
+      setStep('workspaceInit')
+    } else if (s === 'softBlur') {
+      setStep('fadeOut')
+    } else if (s === 'fadeOut') {
+      onFinish()
     }
-
-    return () => timers.forEach(clearTimeout)
-  }, [step, onFinish])
+  }, [onFinish])
 
   // Notify parent when workspace preparation finishes.
   useEffect(() => {
@@ -73,6 +66,7 @@ export function MobileTransition({ onFinish, onWorkspaceReady, shouldProceed }: 
           filter: isExitingContent ? 'blur(6px)' : 'blur(0px)',
         }}
         transition={{ duration: 0.5 }}
+        onAnimationComplete={onContentAnimationComplete}
         className="flex flex-col items-center w-full gap-6"
       >
         <Logo size="lg" />
@@ -85,13 +79,14 @@ export function MobileTransition({ onFinish, onWorkspaceReady, shouldProceed }: 
             className="flex flex-col items-start gap-3 w-full max-w-[200px]"
           >
             {checklistItems.map((label, index) => {
-              const isChecked = checkedCount > index
+              const isChecked = checkedIndices.has(index)
               return (
                 <motion.div
                   key={label}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
+                  onAnimationComplete={() => setCheckedIndices(prev => new Set(prev).add(index))}
                   className="flex items-center gap-2.5"
                 >
                   <div className="w-4 h-4 flex items-center justify-center shrink-0">
@@ -134,6 +129,7 @@ export function MobileTransition({ onFinish, onWorkspaceReady, shouldProceed }: 
                 initial={{ width: '0%' }}
                 animate={{ width: '100%' }}
                 transition={{ duration: 1.0, ease: 'easeInOut' }}
+                onAnimationComplete={() => setWorkspaceReady(true)}
               />
             </div>
             <span className="text-xs text-text-muted">Preparing Workspace</span>

@@ -11,6 +11,8 @@ interface TransitionContextType {
   startTransition: () => void
   endTransition: () => void
   transitionId: number
+  dashboardReady: boolean
+  signalDashboardReady: () => void
 }
 
 const TransitionContext = createContext<TransitionContextType | null>(null)
@@ -18,17 +20,23 @@ const TransitionContext = createContext<TransitionContextType | null>(null)
 export function TransitionProvider({ children }: { children: ReactNode }) {
   const [isActive, setIsActive] = useState(false)
   const [transitionId, setTransitionId] = useState(0)
+  const [dashboardReady, setDashboardReady] = useState(false)
 
   const startTransition = useCallback(() => {
     setIsActive(prev => {
       if (prev) return prev
       setTransitionId(id => id + 1)
+      setDashboardReady(false)
       return true
     })
   }, [])
 
   const endTransition = useCallback(() => {
     setIsActive(false)
+  }, [])
+
+  const signalDashboardReady = useCallback(() => {
+    setDashboardReady(true)
   }, [])
 
   return (
@@ -38,6 +46,8 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
         startTransition,
         endTransition,
         transitionId,
+        dashboardReady,
+        signalDashboardReady,
       }}
     >
       {children}

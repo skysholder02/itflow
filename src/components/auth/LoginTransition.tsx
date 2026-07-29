@@ -7,7 +7,7 @@ import { DesktopTransition } from './DesktopTransition'
 import { MobileTransition } from './MobileTransition'
 
 export function LoginTransition() {
-  const { isActive, endTransition, transitionId } = useTransition()
+  const { isActive, endTransition, transitionId, dashboardReady } = useTransition()
   const isMobile = useIsMobile()
   const navigate = useNavigate()
 
@@ -28,30 +28,36 @@ export function LoginTransition() {
   // Guard: onFinish must only fire once per transition.
   // Reset guard when a new transition starts (transitionId changes).
   const finishGuardRef = useRef(false)
-  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   useEffect(() => {
     finishGuardRef.current = false
     setShouldProceed(false)
   }, [transitionId])
 
-  // Cleanup fade timer on unmount.
+  // Wait for dashboard to mount and entrance animation to finish before proceeding.
   useEffect(() => {
-    return () => clearTimeout(fadeTimerRef.current)
-  }, [])
+    if (dashboardReady && isActive && !shouldProceed) {
+      setShouldProceed(true)
+    }
+  }, [dashboardReady, isActive, shouldProceed])
 
   const onFinish = useCallback(() => {
     if (finishGuardRef.current) return
     finishGuardRef.current = true
-    setIsFadingOut(true)
-    fadeTimerRef.current = setTimeout(() => {
+    if (capturedIsMobile) {
+      setIsFadingOut(true)
+    } else {
       endTransition()
-      setIsFadingOut(false)
-    }, 550)
-  }, [endTransition])
+    }
+  }, [capturedIsMobile, endTransition])
+
+  const onOverlayAnimationComplete = useCallback(() => {
+    if (!isFadingOut) return
+    endTransition()
+    setIsFadingOut(false)
+  }, [isFadingOut, endTransition])
 
   const handleWorkspaceReady = useCallback(() => {
     navigate('/dashboard')
-    setShouldProceed(true)
   }, [navigate])
 
   return (
@@ -59,11 +65,12 @@ export function LoginTransition() {
       {isActive && (
         <motion.div
           key="login-transition-overlay"
-          className={`fixed inset-0 z-[100] bg-bg-primary ${isFadingOut ? 'pointer-events-none' : ''}`}
+          className={`fixed inset-0 z-[100] ${capturedIsMobile ? 'bg-bg-primary' : ''} ${isFadingOut ? 'pointer-events-none' : ''}`}
           initial={{ opacity: 1 }}
-          animate={{ opacity: isFadingOut ? 0 : 1 }}
+          animate={{ opacity: capturedIsMobile && isFadingOut ? 0 : 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={capturedIsMobile ? { duration: 0.5 } : { duration: 0 }}
+          onAnimationComplete={onOverlayAnimationComplete}
         >
           {capturedIsMobile ? (
             <MobileTransition
@@ -76,7 +83,7 @@ export function LoginTransition() {
             <DesktopTransition
               key={`desktop-${transitionId}`}
               onFinish={onFinish}
-              onWorkspaceReady={handleWorkspaceReady}
+              onDoorsClosed={handleWorkspaceReady}
               shouldProceed={shouldProceed}
             />
           )}

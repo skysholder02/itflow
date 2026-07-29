@@ -5,9 +5,10 @@ import type { ReactNode } from 'react'
 interface PageTransitionProps {
   children: ReactNode
   className?: string
+  onAnimationComplete?: () => void
 }
 
-export function PageTransition({ children, className }: PageTransitionProps) {
+export function PageTransition({ children, className, onAnimationComplete }: PageTransitionProps) {
   return (
     <motion.div
       variants={pageTransition}
@@ -16,6 +17,7 @@ export function PageTransition({ children, className }: PageTransitionProps) {
       exit="exit"
       transition={pageTransitionConfig}
       className={className}
+      onAnimationComplete={onAnimationComplete}
     >
       {children}
     </motion.div>
