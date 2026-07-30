@@ -2,7 +2,7 @@ export const DEMO_ACCOUNTS = [
   {
     email: 'employee@itflow.demo',
     password: 'demo123',
-    label: 'Karyawan',
+    label: 'Employee',
     role: 'karyawan' as const,
   },
   {

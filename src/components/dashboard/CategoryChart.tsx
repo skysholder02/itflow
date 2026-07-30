@@ -30,7 +30,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
   return (
     <Card>
       <h3 className="text-lg font-semibold text-text-primary mb-6">
-        Tiket Berdasarkan Kategori
+        Tickets by Category
       </h3>
       <div className="space-y-4">
         {categories.map((cat, i) => {
@@ -42,7 +42,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
                 <span className="text-text-secondary">{cat}</span>
                 <span className="text-text-muted">{count}</span>
               </div>
-              <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+              <div className="h-2 bg-surface-overlay rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${width}%` }}

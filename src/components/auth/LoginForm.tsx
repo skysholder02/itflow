@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Button, Input, Card, Logo, GlowBackground } from '@/components/ui'
+import { Button, Input, Logo } from '@/components/ui'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTransition } from '@/contexts/TransitionContext'
 import { DEMO_ACCOUNTS } from '@/data/demoAccounts'
@@ -15,8 +15,8 @@ import { userRepo, sessionRepo } from '@/services/repositories'
 import type { Role, AccountStatus } from '@/types'
 
 const schema = z.object({
-  email: z.string().email('Format email tidak valid'),
-  password: z.string().min(1, 'Kata Sandi wajib diisi'),
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(1, 'Password is required'),
 })
 
 type FormData = z.infer<typeof schema>
@@ -96,7 +96,7 @@ export function LoginForm() {
         setExpiredEmail(data.email)
         return
       }
-      setError('Email atau kata sandi salah')
+      setError('Invalid email or password')
     }
   }
 
@@ -155,21 +155,27 @@ export function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative p-6">
-      <GlowBackground />
+    <div className="min-h-screen flex items-center justify-center relative p-6 overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-gradient-to-b from-[#007aff]/4 via-[#007aff]/2 to-transparent rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-gradient-to-b from-[#af52de]/4 via-[#af52de]/2 to-transparent rounded-full blur-3xl" />
+      </div>
+
       <motion.div
         variants={fadeUp}
         initial="initial"
         animate="animate"
         transition={fadeUpTransition}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-sm relative z-10"
       >
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <Logo size="lg" className="justify-center" />
-          <p className="text-text-muted mt-4">Masuk ke akun Anda</p>
+          <p className="text-sm text-text-secondary mt-5 font-[450] tracking-[-0.01em]">
+            Sign in to your workspace
+          </p>
         </div>
 
-        <Card>
+        <div className="glass-card p-8 shadow-[0_2px_20px_rgba(0,0,0,0.06)]">
           {/* Returning User Quick Login */}
           <AnimatePresence mode="wait">
             {rememberedAccount && (
@@ -179,10 +185,10 @@ export function LoginForm() {
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-6"
               >
-                <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
+                <div className="bg-surface-overlay border border-[rgba(0,0,0,0.06)] rounded-2xl p-4">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-center">
-                      <span className="text-green-400">🟢</span>
+                      <span className="text-green-500">🟢</span>
                     </div>
                     <div className="flex-1">
                       <p className="text-xs text-text-muted uppercase tracking-wide">Continue as</p>
@@ -212,17 +218,17 @@ export function LoginForm() {
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <Input
               label="Email"
               id="email"
               type="email"
-              placeholder="email@perusahaan.com"
+              placeholder="email@company.com"
               error={errors.email?.message}
               {...register('email')}
             />
             <Input
-              label="Kata Sandi"
+              label="Password"
               id="password"
               type="password"
               placeholder="••••••••"
@@ -230,7 +236,7 @@ export function LoginForm() {
               {...register('password')}
             />
             {error && (
-              <div className="text-sm text-red-400 text-center space-y-2">
+              <div className="text-sm text-red-500 text-center space-y-2">
                 <p>{error}</p>
                 {expiredEmail && (
                   <Button
@@ -248,15 +254,15 @@ export function LoginForm() {
             <Button type="submit" loading={isSubmitting} className="w-full">
               Login
             </Button>
-            <div className="text-center mt-4">
+            <div className="text-center">
               <p className="text-xs text-text-muted">
-                Belum punya akun?{' '}
+                Don't have an account?{' '}
                 <button
                   type="button"
                   onClick={() => navigate('/register')}
                   className="text-brand-primary hover:underline font-medium cursor-pointer"
                 >
-                  Daftar
+                  Register
                 </button>
               </p>
             </div>
@@ -268,23 +274,25 @@ export function LoginForm() {
             onSessionCreated={handleSessionCreated}
           />
 
-          <div className="mt-6 pt-6 border-t border-white/6">
-            <p className="text-xs text-text-muted text-center mb-3">🎮 Demo Accounts</p>
+          <div className="mt-8 pt-6 border-t border-[rgba(0,0,0,0.06)]">
+            <p className="text-xs text-text-muted text-center mb-4 font-medium tracking-wide uppercase">
+              Demo Accounts
+            </p>
             <div className="space-y-2">
               {DEMO_ACCOUNTS.map((account) => (
                 <button
                   key={account.email}
                   type="button"
                   onClick={() => fillDemo(account.email, account.password)}
-                  className="w-full text-left px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-sm cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 rounded-xl bg-surface-overlay hover:bg-surface-overlay-hover transition-colors text-sm cursor-pointer border border-[rgba(0,0,0,0.04)]"
                 >
                   <span className="text-text-primary font-medium">{account.label}</span>
-                  <span className="text-text-muted ml-2">{account.email}</span>
+                  <span className="text-text-muted ml-2 text-xs">{account.email}</span>
                 </button>
               ))}
             </div>
           </div>
-        </Card>
+        </div>
       </motion.div>
     </div>
   )

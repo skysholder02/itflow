@@ -30,18 +30,18 @@ export function RegisterPage() {
 
     try {
       if (!email || !password) {
-        setError('Email dan kata sandi wajib diisi')
+        setError('Email and password are required')
         return
       }
 
       if (role !== 'vendor' && !name) {
-        setError('Semua field wajib diisi')
+        setError('All fields are required')
         return
       }
 
       const existing = await userRepo.getByEmail(email)
       if (existing) {
-        setError('Email sudah terdaftar')
+        setError('Email is already registered')
         return
       }
 
@@ -49,20 +49,20 @@ export function RegisterPage() {
         email,
         password,
         role,
-        department: role === 'vendor' ? 'Vendor Eksternal' : department || 'Umum',
+        department: role === 'vendor' ? 'External Vendor' : department || 'General',
         name: role === 'vendor' ? picName : name,
         status: 'PendingApproval',
       }
 
       if (role === 'vendor') {
         if (!companyName || !picName || !phone) {
-          setError('Semua data vendor wajib diisi')
+          setError('All vendor data is required')
           return
         }
 
         const parsedWorkerCount = parseInt(workerCount, 10)
         if (!parsedWorkerCount || parsedWorkerCount < 1) {
-          setError('Jumlah pekerja minimal 1')
+          setError('Worker count must be at least 1')
           return
         }
 
@@ -76,7 +76,7 @@ export function RegisterPage() {
           {
             id: `vtl-${Date.now()}`,
             timestamp: new Date().toISOString(),
-            activity: `Registrasi akun vendor diajukan (PendingApproval) oleh PIC: ${picName}.`,
+            activity: `Vendor account registration submitted (PendingApproval) by PIC: ${picName}.`,
           },
         ]
         userData.vendorExtensionRequests = []
@@ -90,7 +90,7 @@ export function RegisterPage() {
       // Redirect to Login page
       navigate('/login')
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Terjadi kesalahan saat registrasi'
+      const message = err instanceof Error ? err.message : 'An error occurred during registration'
       setError(message)
     } finally {
       setLoading(false)
@@ -110,7 +110,7 @@ export function RegisterPage() {
       >
         <div className="text-center mb-8">
           <Logo size="lg" className="justify-center" />
-          <p className="text-text-muted mt-4">Buat akun baru Anda</p>
+          <p className="text-text-muted mt-4">Create your new account</p>
         </div>
 
         <Card className="border border-white/10">
@@ -122,7 +122,7 @@ export function RegisterPage() {
             )}
 
             <Select
-              label="Peran / Role"
+              label="Role"
               options={[
                 { value: 'karyawan', label: 'Employee' },
                 { value: 'itsupport', label: 'IT Support' },
@@ -138,25 +138,25 @@ export function RegisterPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-4 border-t border-white/5 pt-6"
               >
-                <h3 className="text-base font-semibold text-brand-accent">Informasi Vendor</h3>
+                <h3 className="text-base font-semibold text-brand-accent">Vendor Information</h3>
 
                 <Input
                   label="Company Name"
-                  placeholder="Contoh: PT Solusi Utama"
+                  placeholder="e.g. PT Solusi Utama"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   required
                 />
                 <Input
                   label="PIC Name"
-                  placeholder="Nama penanggung jawab"
+                  placeholder="PIC name"
                   value={picName}
                   onChange={(e) => setPicName(e.target.value)}
                   required
                 />
                 <Input
                   label="Phone Number"
-                  placeholder="Contoh: 081234567890"
+                  placeholder="e.g. 081234567890"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
@@ -164,7 +164,7 @@ export function RegisterPage() {
                 <Input
                   label="Email"
                   type="email"
-                  placeholder="nama@email.com"
+                  placeholder="name@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -181,7 +181,7 @@ export function RegisterPage() {
                   label="Worker Count"
                   type="number"
                   min="1"
-                  placeholder="Jumlah pekerja"
+                  placeholder="Worker count"
                   value={workerCount}
                   onChange={(e) => setWorkerCount(e.target.value)}
                   required
@@ -191,16 +191,16 @@ export function RegisterPage() {
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
-                    label="Nama Lengkap"
-                    placeholder="Masukkan nama lengkap Anda"
+                    label="Full Name"
+                    placeholder="Enter your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
                   />
                   <Input
-                    label="Alamat Email"
+                    label="Email Address"
                     type="email"
-                    placeholder="nama@email.com"
+                    placeholder="name@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -209,7 +209,7 @@ export function RegisterPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
-                    label="Kata Sandi"
+                    label="Password"
                     type="password"
                     placeholder="••••••••"
                     value={password}
@@ -217,8 +217,8 @@ export function RegisterPage() {
                     required
                   />
                   <Input
-                    label="Departemen"
-                    placeholder="Contoh: Produksi, Gudang, HRD"
+                    label="Department"
+                    placeholder="e.g. Production, Warehouse, HR"
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
                   />
@@ -227,14 +227,14 @@ export function RegisterPage() {
             )}
 
             <Button type="submit" loading={loading} className="w-full">
-              {role === 'vendor' ? 'Submit Vendor Registration' : 'Daftar Akun'}
+              {role === 'vendor' ? 'Submit Vendor Registration' : 'Register'}
             </Button>
 
             <div className="text-center pt-2">
               <p className="text-xs text-text-muted">
-                Sudah memiliki akun?{' '}
+                Already have an account?{' '}
                 <Link to="/login" className="text-brand-primary hover:underline font-medium">
-                  Masuk ke Akun
+                  Sign In
                 </Link>
               </p>
             </div>

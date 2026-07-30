@@ -85,7 +85,7 @@ export function UserManagementPage() {
           {
             id: `vtl-${Date.now()}`,
             timestamp: new Date().toISOString(),
-            activity: `Pendaftaran disetujui. Akun aktif hingga ${formatDate(expiryDate)}.`,
+            activity: `Registration approved. Account active until ${formatDate(expiryDate)}.`,
           },
         ]
       }
@@ -119,7 +119,7 @@ export function UserManagementPage() {
           {
             id: `vtl-${Date.now()}`,
             timestamp: new Date().toISOString(),
-            activity: `Pendaftaran ditolak. Alasan: ${reason}`,
+            activity: `Registration rejected. Reason: ${reason}`,
           },
         ]
       }
@@ -158,7 +158,7 @@ export function UserManagementPage() {
           {
             id: `vtl-${Date.now()}`,
             timestamp: new Date().toISOString(),
-            activity: `Perpanjangan akun disetujui selama +${requestedDays} hari. Masa aktif baru: ${formatDate(newExpiry)}.`,
+            activity: `Account extension approved for +${requestedDays} days. New expiry: ${formatDate(newExpiry)}.`,
           },
         ],
       })
@@ -194,7 +194,7 @@ export function UserManagementPage() {
           {
             id: `vtl-${Date.now()}`,
             timestamp: new Date().toISOString(),
-            activity: `Perpanjangan akun ditolak. Alasan: ${reason}`,
+            activity: `Account extension rejected. Reason: ${reason}`,
           },
         ],
       })
@@ -478,7 +478,7 @@ export function UserManagementPage() {
                   <Button variant="secondary" type="button" onClick={() => setRejectModal(null)}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-red-600 hover:bg-red-700">
+                  <Button type="submit" variant="danger">
                     Reject
                   </Button>
                 </div>
@@ -545,7 +545,7 @@ export function UserManagementPage() {
                   <Button variant="secondary" type="button" onClick={() => setRejectExtModal(null)}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-red-600 hover:bg-red-700">
+                  <Button type="submit" variant="danger">
                     Reject
                   </Button>
                 </div>

@@ -51,7 +51,7 @@ export function VendorManagementPage() {
         {
           id: `vtl-${Date.now()}`,
           timestamp: new Date().toISOString(),
-          activity: `Pendaftaran disetujui. Akun aktif hingga ${formatDate(expiryDate)}.`,
+          activity: `Registration approved. Account active until ${formatDate(expiryDate)}.`,
         },
       ]
       
@@ -77,7 +77,7 @@ export function VendorManagementPage() {
         {
           id: `vtl-${Date.now()}`,
           timestamp: new Date().toISOString(),
-          activity: `Pendaftaran ditolak. Alasan: ${reason}`,
+          activity: `Registration rejected. Reason: ${reason}`,
         },
       ]
       
@@ -117,7 +117,7 @@ export function VendorManagementPage() {
         {
           id: `vtl-${Date.now()}`,
           timestamp: new Date().toISOString(),
-          activity: `Perpanjangan akun disetujui selama +${requestedDays} hari. Masa aktif baru: ${formatDate(newExpiry)}.`,
+          activity: `Account extension approved for +${requestedDays} days. New expiry: ${formatDate(newExpiry)}.`,
         },
       ]
 
@@ -158,7 +158,7 @@ export function VendorManagementPage() {
         {
           id: `vtl-${Date.now()}`,
           timestamp: new Date().toISOString(),
-          activity: `Perpanjangan akun ditolak. Alasan: ${reason}`,
+          activity: `Account extension rejected. Reason: ${reason}`,
         },
       ]
 
@@ -236,7 +236,7 @@ export function VendorManagementPage() {
         </div>
       ) : filtered.length === 0 ? (
         <Card className="text-center py-12 text-text-muted">
-          Tidak ada vendor dalam kategori ini.
+          No vendors in this category.
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -256,16 +256,16 @@ export function VendorManagementPage() {
 
                   <div className="space-y-2 text-xs border-t border-white/5 pt-3">
                     <div className="flex justify-between">
-                      <span className="text-text-muted">No. Telp PIC:</span>
+                      <span className="text-text-muted">PIC Phone:</span>
                       <span className="text-text-primary font-medium">{vendor.vendorPhone}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-text-muted">Jumlah Pekerja:</span>
-                      <span className="text-text-primary font-medium">{vendor.vendorWorkerCount} Pekerja</span>
+                    <span className="text-text-muted">Worker Count:</span>
+                    <span className="text-text-primary font-medium">{vendor.vendorWorkerCount} Workers</span>
                     </div>
                     {vendor.vendorExpiryDate && (
                       <div className="flex justify-between">
-                        <span className="text-text-muted">Masa Aktif:</span>
+                        <span className="text-text-muted">Expiry:</span>
                         <span className="text-text-primary font-medium">{formatDate(vendor.vendorExpiryDate)}</span>
                       </div>
                     )}
@@ -274,21 +274,21 @@ export function VendorManagementPage() {
                   {/* Pending Extension Request Box */}
                   {pendingExtReq && (
                     <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 p-3 rounded-2xl text-xs space-y-2">
-                      <p className="font-semibold">⚠️ Pengajuan Perpanjangan Akun (+{pendingExtReq.requestedDays} hari)</p>
+                      <p className="font-semibold">⚠️ Account Extension Request (+{pendingExtReq.requestedDays} days)</p>
                       <p className="italic">"{pendingExtReq.reason}"</p>
                       <div className="flex gap-2 pt-1">
                         <Button
                           size="sm"
                           onClick={() => setApproveExtModal({ vendor, reqId: pendingExtReq.id, requestedDays: pendingExtReq.requestedDays })}
                         >
-                          Setujui
+                          Approve
                         </Button>
                         <Button
                           size="sm"
                           variant="secondary"
                           onClick={() => setRejectExtModal({ vendor, reqId: pendingExtReq.id })}
                         >
-                          Tolak
+                          Reject
                         </Button>
                       </div>
                     </div>
@@ -309,12 +309,12 @@ export function VendorManagementPage() {
                   )}
                   {tab === 'active' && !pendingExtReq && (
                     <Button variant="secondary" onClick={() => setApproveModal(vendor)} className="w-full">
-                      Perpanjang / Ubah Masa Aktif
+                      Extend / Change Expiry
                     </Button>
                   )}
                   {tab === 'expired' && !pendingExtReq && (
                     <Button onClick={() => setApproveModal(vendor)} className="w-full">
-                      Aktifkan Kembali
+                      Reactivate
                     </Button>
                   )}
                   {tab === 'archived' && (
@@ -342,13 +342,13 @@ export function VendorManagementPage() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="glass-card p-6 max-w-md w-full relative z-10 border border-white/10 space-y-4"
             >
-              <h3 className="text-lg font-bold text-text-primary">Tentukan Masa Aktif Akun Vendor</h3>
+              <h3 className="text-lg font-bold text-text-primary">Set Vendor Account Expiry</h3>
               <p className="text-xs text-text-muted">
-                Tentukan sampai kapan akun dari vendor <strong>{approveModal.vendorCompany}</strong> dapat digunakan untuk mengakses portal.
+                Set the expiry date for vendor <strong>{approveModal.vendorCompany}</strong> to access the portal.
               </p>
               <div className="space-y-4 pt-2">
                 <Input
-                  label="Masa Aktif Akun (Expiry Date)"
+                  label="Account Expiry Date"
                   type="date"
                   value={expiryDate}
                   onChange={(e) => setExpiryDate(e.target.value)}
@@ -356,9 +356,9 @@ export function VendorManagementPage() {
                 />
                 <div className="flex justify-end gap-3 pt-2">
                   <Button variant="secondary" onClick={() => setApproveModal(null)}>
-                    Batal
+                    Cancel
                   </Button>
-                  <Button onClick={handleApproveRegister}>Setujui & Aktifkan</Button>
+                  <Button onClick={handleApproveRegister}>Approve & Activate</Button>
                 </div>
               </div>
             </motion.div>
@@ -388,16 +388,16 @@ export function VendorManagementPage() {
                 />
                 <Input
                   label="WhatsApp Number"
-                  placeholder="Contoh: 08123456789"
+                  placeholder="E.g.: 08123456789"
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
                   required
                 />
                 <div className="flex justify-end gap-3 pt-2">
                   <Button variant="secondary" type="button" onClick={() => setRejectModal(null)}>
-                    Batal
+                    Cancel
                   </Button>
-                  <Button type="submit" className="bg-red-600 hover:bg-red-700">
+                  <Button type="submit" variant="danger">
                     Reject
                   </Button>
                 </div>
@@ -418,16 +418,16 @@ export function VendorManagementPage() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="glass-card p-6 max-w-md w-full relative z-10 border border-white/10 space-y-4"
             >
-              <h3 className="text-lg font-bold text-text-primary">Setujui Perpanjangan Akun</h3>
+              <h3 className="text-lg font-bold text-text-primary">Approve Account Extension</h3>
               <p className="text-sm text-text-secondary">
-                Apakah Anda setuju untuk memperpanjang masa aktif akun vendor <strong>{approveExtModal.vendor.vendorCompany}</strong> selama{' '}
-                <strong>+{approveExtModal.requestedDays} hari</strong>?
+                Do you approve extending the account for vendor <strong>{approveExtModal.vendor.vendorCompany}</strong> by{' '}
+                <strong>+{approveExtModal.requestedDays} days</strong>?
               </p>
               <div className="flex justify-end gap-3 pt-2">
                 <Button variant="secondary" onClick={() => setApproveExtModal(null)}>
-                  Batal
+                  Cancel
                 </Button>
-                <Button onClick={handleApproveExtension}>Setujui</Button>
+                <Button onClick={handleApproveExtension}>Approve</Button>
               </div>
             </motion.div>
           </div>
@@ -445,28 +445,28 @@ export function VendorManagementPage() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="glass-card p-6 max-w-md w-full relative z-10 border border-white/10 space-y-4"
             >
-              <h3 className="text-lg font-bold text-text-primary">Tolak Perpanjangan Akun</h3>
+              <h3 className="text-lg font-bold text-text-primary">Reject Account Extension</h3>
               <form onSubmit={handleRejectExtension} className="space-y-4">
                 <Textarea
-                  label="Alasan Penolakan"
-                  placeholder="Tulis alasan menolak perpanjangan akun..."
+                  label="Rejection Reason"
+                  placeholder="Write the reason for rejecting the extension..."
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   required
                 />
                 <Input
-                  label="Nomor WhatsApp Leader IT"
-                  placeholder="Contoh: 08123456789"
+                  label="Leader IT WhatsApp Number"
+                  placeholder="E.g.: 08123456789"
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
                   required
                 />
                 <div className="flex justify-end gap-3 pt-2">
                   <Button variant="secondary" type="button" onClick={() => setRejectExtModal(null)}>
-                    Batal
+                    Cancel
                   </Button>
-                  <Button type="submit" className="bg-red-600 hover:bg-red-700">
-                    Tolak Perpanjangan
+                  <Button type="submit" variant="danger">
+                    Reject Extension
                   </Button>
                 </div>
               </form>

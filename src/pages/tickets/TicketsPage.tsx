@@ -34,20 +34,20 @@ export function TicketsPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-text-primary">Tiket</h2>
+          <h2 className="text-2xl font-bold text-text-primary">Tickets</h2>
           <p className="text-text-muted text-sm mt-1">
-            {role === 'karyawan' ? 'Tiket yang Anda Laporkan' : 'Semua tiket IT'}
+            {role === 'karyawan' ? 'Tickets You Reported' : 'All IT Tickets'}
           </p>
         </div>
         {role && ticketService.canCreateTicket(role) && (
-          <Button onClick={() => navigate('/tickets/create')}>Buat Tiket</Button>
+          <Button onClick={() => navigate('/tickets/create')}>Create Ticket</Button>
         )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         <Select
           options={[
-            { value: 'all', label: 'Semua Status' },
+            { value: 'all', label: 'All Statuses' },
             ...(['Open', 'In Progress', 'Completed'] as TicketStatus[]).map((s) => ({
               value: s,
               label: formatTicketStatus(s),
@@ -58,7 +58,7 @@ export function TicketsPage() {
         />
         <Select
           options={[
-            { value: 'all', label: 'Semua Kategori' },
+            { value: 'all', label: 'All Categories' },
             ...(['Printer', 'WiFi', 'PC', 'CCTV', 'Speaker', 'Other'] as TicketCategory[]).map(
               (c) => ({ value: c, label: formatTicketCategory(c) }),
             ),
@@ -68,7 +68,7 @@ export function TicketsPage() {
         />
         <Select
           options={[
-            { value: 'all', label: 'Semua Prioritas' },
+            { value: 'all', label: 'All Priorities' },
             ...(['Critical', 'High', 'Medium', 'Low'] as TicketPriority[]).map((p) => ({
               value: p,
               label: formatTicketPriority(p),
@@ -81,13 +81,13 @@ export function TicketsPage() {
 
       {filtered.length === 0 ? (
         <EmptyState
-          title="Tidak ada tiket ditemukan"
+          title="No tickets found"
           description={
             role && ticketService.canCreateTicket(role)
-              ? 'Buat tiket pertama Anda untuk memulai.'
-              : 'Tidak ada tiket yang sesuai dengan filter.'
+              ? 'Create your first ticket to get started.'
+              : 'No tickets match the filter.'
           }
-          actionLabel={role && ticketService.canCreateTicket(role) ? 'Buat Tiket' : undefined}
+          actionLabel={role && ticketService.canCreateTicket(role) ? 'Create Ticket' : undefined}
           onAction={
             role && ticketService.canCreateTicket(role)
               ? () => navigate('/tickets/create')

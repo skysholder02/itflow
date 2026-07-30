@@ -7,17 +7,17 @@ const testimonials = [
   {
     name: 'David Martinez',
     role: 'Plant Manager, Apex Manufacturing',
-    quote: 'ITFlow mengubah cara kami menangani permintaan IT. Waktu penyelesaian Tiket turun 60% pada kuartal pertama.',
+    quote: 'ITFlow transformed how we handle IT requests. Ticket resolution time dropped 60% in the first quarter.',
   },
   {
     name: 'Lisa Thompson',
     role: 'IT Director, Global Industries',
-    quote: 'Pelacakan aset dengan QR Code menghemat banyak waktu. Teknisi bisa melihat riwayat perbaikan langsung di area kerja.',
+    quote: 'QR Code asset tracking saves us tremendous time. Technicians can view repair history right at the work site.',
   },
   {
     name: 'James Wilson',
     role: 'Operations Lead, SteelWorks Corp',
-    quote: 'Akhirnya ada platform yang memahami kebutuhan IT operasional. Dashboard memberi visibilitas nyata atas performa IT.',
+    quote: 'Finally, a platform that understands operational IT needs. The dashboard gives real visibility into IT performance.',
   },
 ]
 
@@ -34,10 +34,10 @@ export function Testimonials() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-            Kata Tim Pengguna
+            What Users Say
           </h2>
           <p className="text-text-muted max-w-2xl mx-auto">
-            Cerita dari profesional IT yang menggunakan ITFlow setiap hari.
+            Stories from IT professionals using ITFlow every day.
           </p>
         </motion.div>
 

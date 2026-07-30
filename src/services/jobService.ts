@@ -27,7 +27,7 @@ export const jobService = {
       {
         id: `tl-${Date.now()}-1`,
         time,
-        activity: `Pekerjaan dibuat oleh Leader IT ${data.leaderName}`,
+        activity: `Job created by Leader IT ${data.leaderName}`,
       },
     ]
 
@@ -47,15 +47,15 @@ export const jobService = {
     if (!job) throw new Error('Job not found')
 
     const time = getFormattedTime()
-    let activity = `Status pekerjaan diperbarui menjadi ${status}`
+    let activity = `Job status updated to ${status}`
     if (status === 'In Progress') {
-      activity = 'Vendor mulai bekerja'
+      activity = 'Vendor started working'
     } else if (status === 'Completed') {
       activity = 'Job Completed'
     } else if (status === 'Cancelled') {
-      activity = 'Pekerjaan dibatalkan'
+      activity = 'Job cancelled'
     } else if (status === 'Approved') {
-      activity = 'Pekerjaan disetujui untuk dimulai'
+      activity = 'Job approved to start'
     }
 
     const updatedTimeline = [
@@ -83,7 +83,7 @@ export const jobService = {
       {
         id: `tl-${Date.now()}`,
         time,
-        activity: 'Kehadiran pekerja diperbarui',
+        activity: 'Worker attendance updated',
       },
     ]
 
@@ -112,7 +112,7 @@ export const jobService = {
       {
         id: `tl-${Date.now()}`,
         time,
-        activity: `Material ditambahkan: ${newMaterial.materialName} (${newMaterial.quantity} ${newMaterial.unit})`,
+        activity: `Material added: ${newMaterial.materialName} (${newMaterial.quantity} ${newMaterial.unit})`,
       },
     ]
 
@@ -141,7 +141,7 @@ export const jobService = {
       {
         id: `tl-${Date.now()}`,
         time,
-        activity: `Foto progress diupload (${doc.type}) oleh ${doc.uploadedBy}`,
+        activity: `Progress photo uploaded (${doc.type}) by ${doc.uploadedBy}`,
       },
     ]
 
@@ -169,7 +169,7 @@ export const jobService = {
       {
         id: `tl-${Date.now()}`,
         time,
-        activity: `Request Extension diajukan: +${additionalDays} hari (${reason})`,
+        activity: `Extension requested: +${additionalDays} days (${reason})`,
       },
     ]
 
@@ -205,7 +205,7 @@ export const jobService = {
       {
         id: `tl-${Date.now()}`,
         time,
-        activity: `Leader Approve Extension: +${daysToAdd} hari. Deadline baru: ${newDeadline}`,
+        activity: `Leader approved extension: +${daysToAdd} days. New deadline: ${newDeadline}`,
       },
     ]
 
@@ -239,7 +239,7 @@ export const jobService = {
       {
         id: `tl-${Date.now()}`,
         time,
-        activity: `Leader Reject Extension. Alasan: ${reason} (WhatsApp: ${whatsapp})`,
+        activity: `Leader rejected extension. Reason: ${reason} (WhatsApp: ${whatsapp})`,
       },
     ]
 
@@ -268,7 +268,7 @@ export const jobService = {
       {
         id: `tl-${Date.now()}`,
         time,
-        activity: `Rating diberikan oleh ${byRole === 'vendor' ? 'Vendor' : 'IT Support'}`,
+        activity: `Rating submitted by ${byRole === 'vendor' ? 'Vendor' : 'IT Support'}`,
       },
     ]
 

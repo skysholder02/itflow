@@ -50,12 +50,12 @@ export function QRAssetsPage() {
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-text-primary">QR Code</h2>
         <p className="text-text-muted text-sm mt-1">
-          Pindai QR Code untuk mengakses informasi aset secara instan
+          Scan QR Code to instantly access asset information
         </p>
       </div>
 
       {assets.length === 0 ? (
-        <EmptyState title="Tidak ada aset" description="Tambah aset untuk menghasilkan QR Code." />
+        <EmptyState title="No assets" description="Add assets to generate QR codes." />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {assets.map((asset, i) => (

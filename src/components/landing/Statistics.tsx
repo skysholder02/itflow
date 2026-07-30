@@ -33,10 +33,10 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: str
 }
 
 const stats = [
-  { label: 'Tiket Selesai', value: 1248, suffix: '+' },
-  { label: 'Aset Terpantau', value: 856, suffix: '+' },
-  { label: 'Uptime Sistem', value: 99, suffix: '.9%' },
-  { label: 'User Aktif', value: 340, suffix: '+' },
+  { label: 'Tickets Resolved', value: 1248, suffix: '+' },
+  { label: 'Assets Tracked', value: 856, suffix: '+' },
+  { label: 'System Uptime', value: 99, suffix: '.9%' },
+  { label: 'Active Users', value: 340, suffix: '+' },
 ]
 
 export function Statistics() {
@@ -52,10 +52,10 @@ export function Statistics() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-            Dipercaya Tim IT
+            Trusted by IT Teams
           </h2>
           <p className="text-text-muted max-w-2xl mx-auto">
-            Angka nyata dari organisasi yang mengelola infrastruktur IT dengan ITFlow.
+            Real numbers from organizations managing IT infrastructure with ITFlow.
           </p>
         </motion.div>
 

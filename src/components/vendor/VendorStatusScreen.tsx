@@ -39,7 +39,7 @@ export function VendorStatusScreen() {
       const timelineItem = {
         id: `vtl-${Date.now()}`,
         timestamp: new Date().toISOString(),
-        activity: `Mengajukan perpanjangan akun selama ${days} hari. Alasan: ${reason}`,
+        activity: `Account extension request: +${days} days. Reason: ${reason}`,
       }
 
       const updatedRequests = [...(user.vendorExtensionRequests || []), newRequest]
@@ -51,7 +51,7 @@ export function VendorStatusScreen() {
       })
 
       await refreshUser()
-      setSuccess('Permintaan perpanjangan berhasil dikirim!')
+      setSuccess('Extension request submitted successfully!')
       setReason('')
     } catch (err) {
       console.error(err)

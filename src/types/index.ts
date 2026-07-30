@@ -138,6 +138,13 @@ export interface Notification {
   createdAt: string
 }
 
+export interface Announcement {
+  id: string
+  title: string
+  description: string
+  date: string
+}
+
 export interface ContactSubmission {
   id: string
   name: string

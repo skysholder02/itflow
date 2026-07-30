@@ -136,35 +136,35 @@ export function JobManagementPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-text-primary">Kelola Pekerjaan Vendor</h2>
-          <p className="text-text-muted text-sm mt-1">Daftar semua pekerjaan, penugasan, dan status evaluasi vendor.</p>
+          <h2 className="text-2xl font-bold text-text-primary">Manage Vendor Jobs</h2>
+          <p className="text-text-muted text-sm mt-1">List of all jobs, assignments, and vendor evaluation status.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="w-full sm:w-48">
             <Select
               options={[
-                { value: 'all', label: 'Semua Status' },
-                { value: 'Pending', label: 'Menunggu' },
-                { value: 'Approved', label: 'Disetujui' },
-                { value: 'In Progress', label: 'Dalam Proses' },
-                { value: 'Need Extension', label: 'Butuh Perpanjangan' },
-                { value: 'Completed', label: 'Selesai' },
-                { value: 'Cancelled', label: 'Dibatalkan' },
+                { value: 'all', label: 'All Statuses' },
+                { value: 'Pending', label: 'Pending' },
+                { value: 'Approved', label: 'Approved' },
+                { value: 'In Progress', label: 'In Progress' },
+                { value: 'Need Extension', label: 'Need Extension' },
+                { value: 'Completed', label: 'Completed' },
+                { value: 'Cancelled', label: 'Cancelled' },
               ]}
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             />
           </div>
           <Button onClick={() => setCreateModal(true)}>
-            Buat Pekerjaan Baru
+            Create New Job
           </Button>
         </div>
       </div>
 
       {filteredJobs.length === 0 ? (
         <EmptyState
-          title="Tidak ada pekerjaan"
-          description="Belum ada pekerjaan vendor yang terdaftar."
+          title="No jobs"
+          description="No vendor jobs registered yet."
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -191,11 +191,11 @@ export function JobManagementPage() {
 
               <div className="border-t border-white/5 mt-6 pt-4 space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-text-muted">Vendor Mitra:</span>
+                  <span className="text-text-muted">Vendor Partner:</span>
                   <span className="text-brand-primary font-medium">{job.vendorName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-muted">IT Support Pendamping:</span>
+                  <span className="text-text-muted">IT Support:</span>
                   <span className="text-text-primary font-medium">{job.itSupportName}</span>
                 </div>
                 <div className="flex justify-between pt-1 border-t border-white/5">
@@ -219,37 +219,37 @@ export function JobManagementPage() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="glass-card p-6 max-w-lg w-full relative z-10 border border-white/10 space-y-4 max-h-[90vh] overflow-y-auto"
             >
-              <h3 className="text-lg font-bold text-text-primary">Buat Pekerjaan Vendor Baru</h3>
+              <h3 className="text-lg font-bold text-text-primary">Create New Vendor Job</h3>
               
               {activeVendors.length === 0 ? (
                 <div className="text-center py-6 space-y-4">
                   <p className="text-sm text-yellow-400">
-                    Tidak ada vendor dengan status **Active** di dalam sistem. 
-                    Anda harus menyetujui registrasi vendor terlebih dahulu sebelum membuat pekerjaan.
+                    No vendors with **Active** status in the system. 
+                    You must approve vendor registrations first before creating jobs.
                   </p>
                   <Button variant="secondary" onClick={() => { setCreateModal(false); navigate('/leader/vendors') }}>
-                    Ke Manajemen Vendor
+                    Go to Vendor Management
                   </Button>
                 </div>
               ) : (
                 <form onSubmit={handleCreateJob} className="space-y-4">
                   <Input
-                    label="Judul Pekerjaan"
-                    placeholder="Contoh: Install CCTV Warehouse"
+                    label="Job Title"
+                    placeholder="E.g.: Install CCTV Warehouse"
                     value={form.title}
                     onChange={(e) => setForm({ ...form, title: e.target.value })}
                     required
                   />
                   <Textarea
-                    label="Deskripsi Pekerjaan"
-                    placeholder="Tulis deskripsi detail pekerjaan yang harus dilakukan..."
+                    label="Job Description"
+                    placeholder="Write detailed job description..."
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                     required
                   />
                   <Input
-                    label="Lokasi Pekerjaan"
-                    placeholder="Contoh: Gedung A - Gudang Warehouse"
+                    label="Job Location"
+                    placeholder="E.g.: Building A - Warehouse"
                     value={form.location}
                     onChange={(e) => setForm({ ...form, location: e.target.value })}
                     required
@@ -263,7 +263,7 @@ export function JobManagementPage() {
                       required
                     />
                     <Select
-                      label="Vendor Mitra"
+                      label="Vendor Partner"
                       options={activeVendors.map((v) => ({
                         value: v.id,
                         label: `${v.vendorCompany} (PIC: ${v.vendorPIC})`,
@@ -274,7 +274,7 @@ export function JobManagementPage() {
                     />
                   </div>
                   <Select
-                    label="IT Support Pendamping"
+                    label="IT Support Partner"
                     options={itSupports.map((s) => ({
                       value: s.id,
                       label: s.name,
@@ -285,10 +285,10 @@ export function JobManagementPage() {
                   />
                   <div className="flex justify-end gap-3 pt-2">
                     <Button variant="secondary" type="button" onClick={() => setCreateModal(false)}>
-                      Batal
+                      Cancel
                     </Button>
                     <Button type="submit" loading={submitting}>
-                      Buat & Delegasikan
+                      Create & Delegate
                     </Button>
                   </div>
                 </form>

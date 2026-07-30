@@ -66,8 +66,8 @@ export function JobDetailPage() {
   if (!job || !user || !role) {
     return (
       <Card className="text-center py-12">
-        <p className="text-text-muted">Pekerjaan tidak ditemukan.</p>
-        <Button onClick={() => navigate(-1)} className="mt-4">Kembali</Button>
+        <p className="text-text-muted">Job not found.</p>
+        <Button onClick={() => navigate(-1)} className="mt-4">Back</Button>
       </Card>
     )
   }
@@ -227,7 +227,7 @@ export function JobDetailPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => navigate(-1)}>
-            Kembali
+            Back
           </Button>
 
           {/* Action buttons based on status & role */}
@@ -266,7 +266,7 @@ export function JobDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Description & Metadata */}
           <Card className="space-y-4">
-            <h3 className="text-lg font-semibold text-text-primary">Deskripsi Pekerjaan</h3>
+            <h3 className="text-lg font-semibold text-text-primary">Job Description</h3>
             <p className="text-sm text-text-secondary whitespace-pre-line leading-relaxed">
               {job.description}
             </p>
@@ -277,7 +277,7 @@ export function JobDetailPage() {
                 <span className="text-text-primary font-medium text-sm">{job.leaderName}</span>
               </div>
               <div>
-                <span className="text-text-muted block">IT Support Pendamping:</span>
+                <span className="text-text-muted block">IT Support:</span>
                 <span className="text-text-primary font-medium text-sm">{job.itSupportName}</span>
               </div>
               <div>
@@ -296,9 +296,9 @@ export function JobDetailPage() {
           {/* Workers checklist */}
           <Card className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-text-primary">Kehadiran Pekerja (Workers)</h3>
+              <h3 className="text-lg font-semibold text-text-primary">Worker Attendance</h3>
               <span className="text-xs text-text-muted">
-                {job.workers.filter(w => w.present).length} dari {job.workers.length} hadir
+                {job.workers.filter(w => w.present).length} of {job.workers.length} present
               </span>
             </div>
             
@@ -337,22 +337,22 @@ export function JobDetailPage() {
               <h3 className="text-lg font-semibold text-text-primary">Material Notes</h3>
               {(isVendor && isAssignedVendor || isITSupport && isAssignedITSupport) && (
                 <Button size="sm" onClick={() => setMaterialModal(true)}>
-                  Tambah Material
+                  Add Material
                 </Button>
               )}
             </div>
 
             {job.materials.length === 0 ? (
-              <p className="text-sm text-text-muted py-2">Belum ada material yang ditambahkan.</p>
+              <p className="text-sm text-text-muted py-2">No materials added yet.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-sm">
                   <thead>
                     <tr className="border-b border-white/10 text-text-muted text-xs uppercase">
                       <th className="py-2">Material</th>
-                      <th className="py-2">Jumlah</th>
-                      <th className="py-2">Ditambahkan Oleh</th>
-                      <th className="py-2">Catatan</th>
+                      <th className="py-2">Qty</th>
+                      <th className="py-2">Added By</th>
+                      <th className="py-2">Notes</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -375,17 +375,17 @@ export function JobDetailPage() {
           {/* Documentation gallery */}
           <Card className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-text-primary">Dokumentasi (Gallery)</h3>
+              <h3 className="text-lg font-semibold text-text-primary">Documentation (Gallery)</h3>
               {canModify && !isLeader && (
                 <Button size="sm" variant="secondary" onClick={() => setDocModal(true)}>
-                  Upload Foto
+                  Upload Photo
                 </Button>
               )}
             </div>
 
             {job.documentation.length === 0 ? (
               <p className="text-sm text-text-muted py-4 text-center bg-white/5 rounded-2xl border border-white/5">
-                Belum ada dokumentasi foto yang diunggah.
+                No photo documentation uploaded yet.
               </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -402,7 +402,7 @@ export function JobDetailPage() {
                       </span>
                     </div>
                     <div className="p-3 text-xs space-y-1">
-                      <p className="text-text-primary font-medium truncate">Oleh: {doc.uploadedBy}</p>
+                      <p className="text-text-primary font-medium truncate">By: {doc.uploadedBy}</p>
                       <p className="text-text-muted">{formatDateTime(doc.uploadedAt)}</p>
                     </div>
                   </div>
@@ -414,7 +414,7 @@ export function JobDetailPage() {
           {/* Extension requests list (Leader Approvals / View only) */}
           {job.extensionRequests.length > 0 && (
             <Card className="space-y-4">
-              <h3 className="text-lg font-semibold text-text-primary">Riwayat Pengajuan Perpanjangan Waktu</h3>
+              <h3 className="text-lg font-semibold text-text-primary">Extension Request History</h3>
               <div className="space-y-3">
                 {job.extensionRequests.map((req) => (
                   <div
@@ -424,14 +424,14 @@ export function JobDetailPage() {
                     <div className="space-y-1 text-sm">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-text-primary">
-                          Tambahan +{req.additionalDays} Hari
+                          Extra +{req.additionalDays} Days
                         </span>
                         <span className="text-xs text-text-muted">({formatDate(req.requestedAt)})</span>
                       </div>
-                      <p className="text-text-secondary text-xs">Alasan: {req.reason}</p>
+                      <p className="text-text-secondary text-xs">Reason: {req.reason}</p>
                       {req.status === 'Rejected' && (
                         <div className="text-xs text-red-400 mt-2 bg-red-500/10 p-2.5 rounded-xl border border-red-500/10">
-                          <p><strong>Ditolak:</strong> {req.rejectReason}</p>
+                          <p><strong>Rejected:</strong> {req.rejectReason}</p>
                           <p className="mt-1">WhatsApp Leader: {req.rejectWhatsApp}</p>
                         </div>
                       )}
@@ -465,7 +465,7 @@ export function JobDetailPage() {
           {/* Ratings & Reviews */}
           {job.status === 'Completed' && (
             <Card className="space-y-6">
-              <h3 className="text-lg font-semibold text-text-primary">Rating & Review Evaluasi</h3>
+              <h3 className="text-lg font-semibold text-text-primary">Rating & Review Evaluation</h3>
 
               {/* Display existing reviews */}
               {job.ratings.length > 0 && (
@@ -477,7 +477,7 @@ export function JobDetailPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-text-primary">
-                              {r.byRole === 'vendor' ? 'Vendor Utama' : 'IT Support'}
+                              {r.byRole === 'vendor' ? 'Main Vendor' : 'IT Support'}
                             </span>
                             <span className="text-xs text-text-muted">({formatDate(r.date)})</span>
                           </div>
@@ -487,7 +487,7 @@ export function JobDetailPage() {
                         
                         {isLeader && (
                           <div className="flex items-center gap-3 pt-2 border-t border-white/5 text-xs">
-                            <span className="text-text-muted">Visibilitas Leader IT:</span>
+                            <span className="text-text-muted">Leader IT Visibility:</span>
                             <button
                               onClick={() => handleToggleRatingVisibility(idx, !r.isPublic)}
                               className={`px-3 py-1 rounded-full border transition-all ${
@@ -509,11 +509,11 @@ export function JobDetailPage() {
               {(isVendor && isAssignedVendor || isITSupport && isAssignedITSupport) && !hasUserRated && (
                 <form onSubmit={handleRatingSubmit} className="space-y-4 bg-white/5 p-4 rounded-2xl border border-white/5">
                   <h4 className="font-semibold text-text-primary text-sm">
-                    Berikan Penilaian Anda untuk {isVendor ? 'IT Support Pendamping' : 'Vendor'}
+                      Provide Your Rating for {isVendor ? 'IT Support Partner' : 'Vendor'}
                   </h4>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-text-secondary">Rating Bintang:</span>
+                    <span className="text-sm text-text-secondary">Star Rating:</span>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -529,14 +529,14 @@ export function JobDetailPage() {
                   </div>
 
                   <Textarea
-                    label="Komentar / Ulasan"
-                    placeholder="Tulis ulasan pekerjaan..."
+                    label="Comment / Review"
+                    placeholder="Write a job review..."
                     value={ratingComment}
                     onChange={(e) => setRatingComment(e.target.value)}
                     required
                   />
 
-                  <Button type="submit">Kirim Ulasan</Button>
+                  <Button type="submit">Submit Review</Button>
                 </form>
               )}
             </Card>
@@ -546,7 +546,7 @@ export function JobDetailPage() {
         {/* Right Column: Timeline (Read only) */}
         <div>
           <Card className="space-y-4">
-            <h3 className="text-lg font-semibold text-text-primary">Timeline Pekerjaan</h3>
+            <h3 className="text-lg font-semibold text-text-primary">Job Timeline</h3>
             <div className="flow-root">
               <ul className="-mb-8">
                 {job.timeline.map((item, idx) => (
@@ -591,18 +591,18 @@ export function JobDetailPage() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="glass-card p-6 max-w-md w-full relative z-10 border border-white/10 space-y-4"
             >
-              <h3 className="text-lg font-bold text-text-primary">Tambah Catatan Material</h3>
+              <h3 className="text-lg font-bold text-text-primary">Add Material Note</h3>
               <form onSubmit={handleAddMaterial} className="space-y-4">
                 <Input
-                  label="Nama Material"
-                  placeholder="Contoh: Kabel LAN Cat6, RJ45, Bracket CCTV"
+                  label="Material Name"
+                  placeholder="E.g.: LAN Cable Cat6, RJ45, CCTV Bracket"
                   value={materialForm.name}
                   onChange={(e) => setMaterialForm({ ...materialForm, name: e.target.value })}
                   required
                 />
                 <div className="grid grid-cols-2 gap-4">
                   <Input
-                    label="Jumlah"
+                    label="Quantity"
                     type="number"
                     min="1"
                     value={materialForm.qty}
@@ -610,24 +610,24 @@ export function JobDetailPage() {
                     required
                   />
                   <Input
-                    label="Satuan"
-                    placeholder="Contoh: Meter, pcs, roll"
+                    label="Unit"
+                    placeholder="E.g.: Meter, pcs, roll"
                     value={materialForm.unit}
                     onChange={(e) => setMaterialForm({ ...materialForm, unit: e.target.value })}
                     required
                   />
                 </div>
                 <Textarea
-                  label="Catatan Tambahan"
-                  placeholder="Keterangan opsional..."
+                  label="Additional Notes"
+                  placeholder="Optional notes..."
                   value={materialForm.notes}
                   onChange={(e) => setMaterialForm({ ...materialForm, notes: e.target.value })}
                 />
                 <div className="flex justify-end gap-3 pt-2">
                   <Button variant="secondary" type="button" onClick={() => setMaterialModal(false)}>
-                    Batal
+                    Cancel
                   </Button>
-                  <Button type="submit">Simpan</Button>
+                  <Button type="submit">Save</Button>
                 </div>
               </form>
             </motion.div>
@@ -646,30 +646,30 @@ export function JobDetailPage() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="glass-card p-6 max-w-md w-full relative z-10 border border-white/10 space-y-4"
             >
-              <h3 className="text-lg font-bold text-text-primary">Upload Dokumentasi Foto</h3>
+              <h3 className="text-lg font-bold text-text-primary">Upload Documentation Photo</h3>
               <form onSubmit={handleUploadDoc} className="space-y-4">
                 <Select
-                  label="Tahap Dokumentasi"
+                  label="Documentation Stage"
                   options={[
-                    { value: 'Before', label: 'Before (Sebelum Bekerja)' },
-                    { value: 'Progress', label: 'Progress (Sedang Bekerja)' },
-                    { value: 'After', label: 'After (Selesai Bekerja)' },
+                    { value: 'Before', label: 'Before' },
+                    { value: 'Progress', label: 'Progress' },
+                    { value: 'After', label: 'After' },
                   ]}
                   value={docForm.type}
                   onChange={(e) => setDocForm({ ...docForm, type: e.target.value as any })}
                 />
                 <Input
-                  label="Link URL Foto"
-                  placeholder="Masukkan URL foto dokumentasi (opsional)"
+                  label="Photo URL Link"
+                  placeholder="Enter documentation photo URL link (optional)"
                   value={docForm.url}
                   onChange={(e) => setDocForm({ ...docForm, url: e.target.value })}
                 />
                 <p className="text-[10px] text-text-muted">
-                  *Jika URL dikosongkan, sistem akan otomatis menggunakan gambar demonstrasi default.
+                  *Leave empty to use a default demo image.
                 </p>
                 <div className="flex justify-end gap-3 pt-2">
                   <Button variant="secondary" type="button" onClick={() => setDocModal(false)}>
-                    Batal
+                    Cancel
                   </Button>
                   <Button type="submit">Upload</Button>
                 </div>
@@ -690,10 +690,10 @@ export function JobDetailPage() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="glass-card p-6 max-w-md w-full relative z-10 border border-white/10 space-y-4"
             >
-              <h3 className="text-lg font-bold text-text-primary">Pengajuan Tambahan Waktu</h3>
+              <h3 className="text-lg font-bold text-text-primary">Request Time Extension</h3>
               <form onSubmit={handleRequestExtension} className="space-y-4">
                 <Input
-                  label="Jumlah Hari Tambahan"
+                  label="Additional Days"
                   type="number"
                   min="1"
                   value={extensionForm.days}
@@ -701,17 +701,17 @@ export function JobDetailPage() {
                   required
                 />
                 <Textarea
-                  label="Alasan Pengajuan"
-                  placeholder="Mengapa Anda memerlukan waktu tambahan untuk menyelesaikan tugas ini?"
+                  label="Reason for Extension"
+                  placeholder="Why do you need extra time to complete this task?"
                   value={extensionForm.reason}
                   onChange={(e) => setExtensionForm({ ...extensionForm, reason: e.target.value })}
                   required
                 />
                 <div className="flex justify-end gap-3 pt-2">
                   <Button variant="secondary" type="button" onClick={() => setExtensionModal(false)}>
-                    Batal
+                    Cancel
                   </Button>
-                  <Button type="submit">Kirim Pengajuan</Button>
+                  <Button type="submit">Submit Request</Button>
                 </div>
               </form>
             </motion.div>
@@ -730,28 +730,28 @@ export function JobDetailPage() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="glass-card p-6 max-w-md w-full relative z-10 border border-white/10 space-y-4"
             >
-              <h3 className="text-lg font-bold text-text-primary">Tolak Perpanjangan Waktu</h3>
+              <h3 className="text-lg font-bold text-text-primary">Reject Time Extension</h3>
               <form onSubmit={handleRejectExtensionSubmit} className="space-y-4">
                 <Textarea
-                  label="Alasan Penolakan"
-                  placeholder="Tulis alasan menolak pengajuan perpanjangan waktu..."
+                  label="Rejection Reason"
+                  placeholder="Write the reason for rejecting the extension request..."
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   required
                 />
                 <Input
-                  label="Nomor WhatsApp Pendamping"
-                  placeholder="Contoh: 081234567890"
+                  label="IT Support WhatsApp Number"
+                  placeholder="E.g.: 081234567890"
                   value={rejectWhatsapp}
                   onChange={(e) => setRejectWhatsapp(e.target.value)}
                   required
                 />
                 <div className="flex justify-end gap-3 pt-2">
                   <Button variant="secondary" type="button" onClick={() => setRejectExtModal(null)}>
-                    Batal
+                    Cancel
                   </Button>
-                  <Button type="submit" className="bg-red-600 hover:bg-red-700">
-                    Tolak Pengajuan
+                  <Button type="submit" variant="danger">
+                    Reject Request
                   </Button>
                 </div>
               </form>

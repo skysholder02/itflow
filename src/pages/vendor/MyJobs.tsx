@@ -44,19 +44,19 @@ export function MyJobs() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-text-primary">Pekerjaan Saya</h2>
-          <p className="text-text-muted text-sm mt-1">Daftar semua tugas dan proyek yang diberikan kepada Anda</p>
+          <h2 className="text-2xl font-bold text-text-primary">My Jobs</h2>
+          <p className="text-text-muted text-sm mt-1">List of all tasks and projects assigned to you</p>
         </div>
         <div className="w-full sm:w-64">
           <Select
             options={[
-              { value: 'all', label: 'Semua Status' },
-              { value: 'Pending', label: 'Menunggu' },
-              { value: 'Approved', label: 'Disetujui' },
-              { value: 'In Progress', label: 'Dalam Proses' },
-              { value: 'Need Extension', label: 'Butuh Perpanjangan' },
-              { value: 'Completed', label: 'Selesai' },
-              { value: 'Cancelled', label: 'Dibatalkan' },
+              { value: 'all', label: 'All Statuses' },
+              { value: 'Pending', label: 'Pending' },
+              { value: 'Approved', label: 'Approved' },
+              { value: 'In Progress', label: 'In Progress' },
+              { value: 'Need Extension', label: 'Need Extension' },
+              { value: 'Completed', label: 'Completed' },
+              { value: 'Cancelled', label: 'Cancelled' },
             ]}
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -66,11 +66,11 @@ export function MyJobs() {
 
       {filteredJobs.length === 0 ? (
         <EmptyState
-          title="Tidak ada pekerjaan"
+          title="No jobs"
           description={
             statusFilter === 'all'
-              ? 'Saat ini belum ada pekerjaan yang ditugaskan kepada Anda.'
-              : 'Tidak ada pekerjaan dengan status terpilih.'
+              ? 'No jobs assigned to you yet.'
+              : 'No jobs with the selected status.'
           }
         />
       ) : (
@@ -107,7 +107,7 @@ export function MyJobs() {
                   <span className="text-text-primary font-medium">{job.leaderName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-muted">IT Support Pendamping:</span>
+                  <span className="text-text-muted">IT Support:</span>
                   <span className="text-text-primary font-medium">{job.itSupportName}</span>
                 </div>
                 <div className="flex justify-between pt-1 border-t border-white/5">

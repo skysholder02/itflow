@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { notificationService } from '@/services/notificationService'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { Badge } from '@/components/ui'
 import { formatRole } from '@/utils/formatters'
 import type { Notification } from '@/types'
@@ -12,6 +14,7 @@ interface TopBarProps {
 
 export function TopBar({ onMenuClick }: TopBarProps) {
   const { user, role } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -56,19 +59,45 @@ export function TopBar({ onMenuClick }: TopBarProps) {
           </button>
           <div>
             <h1 className="text-lg font-semibold text-text-primary">
-              Selamat datang, {user?.name?.split(' ')[0]}
+              Welcome, {user?.name?.split(' ')[0]}
             </h1>
-            <p className="text-xs text-text-muted">Pusat Kendali IT</p>
+            <p className="text-xs text-text-muted">IT Control Center</p>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           {role && <Badge variant="role" value={formatRole(role)} />}
 
+          <motion.button
+            onClick={toggleTheme}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="relative p-2 rounded-xl hover:bg-surface-overlay transition-colors cursor-pointer text-text-secondary"
+            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+          >
+            {theme === 'light' ? (
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
+            )}
+          </motion.button>
+
           <div className="relative" ref={ref}>
             <button
               onClick={() => setOpen(!open)}
-              className="relative p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer"
+              className="relative p-2 rounded-xl hover:bg-surface-overlay transition-colors cursor-pointer"
               aria-label="Notifications"
             >
               <svg className="w-5 h-5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -91,8 +120,8 @@ export function TopBar({ onMenuClick }: TopBarProps) {
                       key={n.id}
                       onClick={() => markRead(n.id)}
                       className={`w-full text-left p-3 rounded-xl transition-colors cursor-pointer ${
-                        n.read ? 'opacity-60' : 'bg-white/5'
-                      } hover:bg-white/10`}
+                        n.read ? 'opacity-60' : 'bg-surface-overlay'
+                      } hover:bg-surface-overlay-hover`}
                     >
                       <p className="text-sm font-medium text-text-primary">{n.title}</p>
                       <p className="text-xs text-text-muted mt-1">{n.message}</p>

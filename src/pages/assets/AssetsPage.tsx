@@ -84,7 +84,7 @@ export function AssetsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('Hapus aset ini?')) {
+    if (confirm('Delete this asset?')) {
       await assetService.deleteAsset(id)
       loadAssets()
     }
@@ -103,14 +103,14 @@ export function AssetsPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-text-primary">Aset</h2>
-          <p className="text-text-muted text-sm mt-1">Kelola aset infrastruktur IT</p>
+          <h2 className="text-2xl font-bold text-text-primary">Assets</h2>
+          <p className="text-text-muted text-sm mt-1">Manage IT infrastructure assets</p>
         </div>
-        {canManage && <Button onClick={openCreate}>Tambah Aset</Button>}
+        {canManage && <Button onClick={openCreate}>Add Asset</Button>}
       </div>
 
       <Input
-        placeholder="Cari aset..."
+        placeholder="Search assets..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="mb-6"
@@ -118,9 +118,9 @@ export function AssetsPage() {
 
       {filtered.length === 0 ? (
         <EmptyState
-          title="Tidak ada aset ditemukan"
-          description="Tambah aset pertama untuk memulai."
-          actionLabel={canManage ? 'Tambah Aset' : undefined}
+          title="No assets found"
+          description="Add your first asset to get started."
+          actionLabel={canManage ? 'Add Asset' : undefined}
           onAction={canManage ? openCreate : undefined}
         />
       ) : (
@@ -146,7 +146,7 @@ export function AssetsPage() {
                       Edit
                     </Button>
                     <Button size="sm" variant="danger" onClick={() => handleDelete(asset.id)}>
-                      Hapus
+                      Delete
                     </Button>
                   </div>
                 )}
@@ -159,15 +159,15 @@ export function AssetsPage() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? 'Edit Aset' : 'Tambah Aset'}
+        title={editing ? 'Edit Asset' : 'Add Asset'}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Input label="Nama" error={errors.name?.message} {...register('name')} />
-          <Input label="Merek" error={errors.brand?.message} {...register('brand')} />
-          <Input label="Nomor Serial" error={errors.serialNumber?.message} {...register('serialNumber')} />
-          <Input label="Lokasi" error={errors.location?.message} {...register('location')} />
+          <Input label="Name" error={errors.name?.message} {...register('name')} />
+          <Input label="Brand" error={errors.brand?.message} {...register('brand')} />
+          <Input label="Serial Number" error={errors.serialNumber?.message} {...register('serialNumber')} />
+          <Input label="Location" error={errors.location?.message} {...register('location')} />
           <Select
-            label="Kategori"
+            label="Category"
             options={categories.map((c) => ({ value: c, label: formatAssetCategory(c) }))}
             {...register('category')}
           />
@@ -178,10 +178,10 @@ export function AssetsPage() {
           />
           <div className="flex gap-3">
             <Button type="submit" loading={isSubmitting}>
-              {editing ? 'Perbarui' : 'Buat'}
+              {editing ? 'Update' : 'Create'}
             </Button>
             <Button variant="ghost" type="button" onClick={() => setModalOpen(false)}>
-              Batal
+              Cancel
             </Button>
           </div>
         </form>

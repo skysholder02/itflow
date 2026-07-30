@@ -49,17 +49,17 @@ export function DocumentationPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-text-primary">Galeri Dokumentasi</h2>
+        <h2 className="text-2xl font-bold text-text-primary">Documentation Gallery</h2>
         <p className="text-text-muted text-sm mt-1">
-          Semua foto dokumentasi Before, Progress, dan After yang diunggah
+          All Before, Progress, and After documentation photos uploaded
         </p>
       </div>
 
       {docs.length === 0 ? (
         <Card>
           <EmptyState
-            title="Tidak ada dokumentasi"
-            description="Belum ada foto dokumentasi pekerjaan yang diunggah."
+            title="No documentation"
+            description="No job documentation photos uploaded yet."
           />
         </Card>
       ) : (
@@ -85,7 +85,7 @@ export function DocumentationPage() {
                 </div>
               </div>
               <div className="p-4 pt-0 border-t border-white/5 flex justify-between items-center text-xs text-text-muted mt-2">
-                <span>Oleh: {doc.uploadedBy}</span>
+                <span>By: {doc.uploadedBy}</span>
                 <span>{formatDateTime(doc.uploadedAt)}</span>
               </div>
             </div>

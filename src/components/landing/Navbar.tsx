@@ -5,10 +5,10 @@ import { Logo, Button } from '@/components/ui'
 import { cn } from '@/utils/cn'
 
 const navLinks = [
-  { label: 'Beranda', href: '#home' },
-  { label: 'Fitur', href: '#features' },
-  { label: 'Statistik', href: '#statistics' },
-  { label: 'Kontak', href: '#contact' },
+  { label: 'Home', href: '#home' },
+  { label: 'Features', href: '#features' },
+  { label: 'Statistics', href: '#statistics' },
+  { label: 'Contact', href: '#contact' },
 ]
 
 export function Navbar() {
@@ -34,7 +34,7 @@ export function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       className={cn(
         'fixed top-0 left-0 right-0 z-40 transition-all duration-300',
-        scrolled ? 'glass-card border-0 border-b border-white/6 py-3' : 'py-5',
+        scrolled ? 'glass-card border-0 border-b border-[var(--color-border-light)] py-3' : 'py-5',
       )}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
@@ -59,14 +59,14 @@ export function Navbar() {
             Login
           </Button>
           <Button size="sm" onClick={() => navigate('/login')}>
-            Mulai
+            Get Started
           </Button>
         </div>
 
         <button
           className="md:hidden text-text-primary cursor-pointer"
           onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Buka menu"
+          aria-label="Open menu"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             {mobileOpen ? (

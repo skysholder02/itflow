@@ -13,7 +13,7 @@ import type { Asset, TicketCategory, TicketPriority } from '@/types'
 
 const schema = z.object({
   title: z.string().optional(),
-  description: z.string().min(10, 'Deskripsi harus terdiri dari minimal 10 karakter'),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
   category: z.enum(['Printer', 'WiFi', 'PC', 'CCTV', 'Speaker', 'Other']),
   priority: z.enum(['Critical', 'High', 'Medium', 'Low']),
   location: z.string().optional(),
@@ -62,17 +62,17 @@ export function CreateTicketPage() {
     if (!user) return
     const linkedAsset = asset ?? null
     if (!linkedAsset && (data.title?.trim().length ?? 0) < 3) {
-      setError('title', { message: 'Judul harus terdiri dari minimal 3 karakter' })
+      setError('title', { message: 'Title must be at least 3 characters' })
       return
     }
     if (!linkedAsset && !data.location?.trim()) {
-      setError('location', { message: 'Lokasi wajib diisi' })
+      setError('location', { message: 'Location is required' })
       return
     }
     const title = linkedAsset
-      ? `Laporan masalah ${linkedAsset.name}`
-      : data.title?.trim() || 'Tiket tanpa judul'
-    const location = linkedAsset ? linkedAsset.location : data.location?.trim() || 'Belum ditentukan'
+      ? `Issue report for ${linkedAsset.name}`
+      : data.title?.trim() || 'Untitled ticket'
+    const location = linkedAsset ? linkedAsset.location : data.location?.trim() || 'Not specified'
     const category = linkedAsset
       ? linkedAsset.category === 'Access Point'
         ? 'WiFi'
@@ -94,7 +94,7 @@ export function CreateTicketPage() {
 
     if (linkedAsset) {
       await ticketService.addNote(ticket.id, {
-        text: `Dilaporkan dari scan QR Code aset: ${linkedAsset.id} - ${linkedAsset.name}.`,
+        text: `Reported from asset QR code scan: ${linkedAsset.id} - ${linkedAsset.name}.`,
         authorId: user.id,
         authorName: user.name,
         createdAt: new Date().toISOString(),
@@ -103,8 +103,8 @@ export function CreateTicketPage() {
         assetId: linkedAsset.id,
         date: new Date().toISOString().split('T')[0],
         problem: data.description,
-        action: `Tiket ${ticket.id} dibuat untuk masalah yang dilaporkan.`,
-        technician: 'Menunggu penugasan',
+        action: `Ticket ${ticket.id} created for reported issue.`,
+        technician: 'Awaiting assignment',
       })
     }
 
@@ -118,41 +118,41 @@ export function CreateTicketPage() {
   return (
     <div className="max-w-2xl">
       <h2 className="text-2xl font-bold text-text-primary mb-2">
-        {asset ? 'Laporkan Masalah Aset' : 'Buat Tiket'}
+        {asset ? 'Report Asset Issue' : 'Create Ticket'}
       </h2>
       <p className="text-text-muted text-sm mb-6">
         {asset
-          ? 'Detail aset dikunci dari hasil scan QR Code.'
-          : 'Kirim permintaan layanan IT baru.'}
+          ? 'Asset details locked from QR code scan.'
+          : 'Submit a new IT service request.'}
       </p>
       <Card>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {asset ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="ID Aset" value={asset.id} readOnly />
-              <Input label="Nama Aset" value={asset.name} readOnly />
-              <Input label="Lokasi Aset" value={asset.location} readOnly className="sm:col-span-2" />
+              <Input label="Asset ID" value={asset.id} readOnly />
+              <Input label="Asset Name" value={asset.name} readOnly />
+              <Input label="Asset Location" value={asset.location} readOnly className="sm:col-span-2" />
             </div>
           ) : (
             <Input
-              label="Judul"
+              label="Title"
               id="title"
-              placeholder="Deskripsi singkat masalah"
+              placeholder="Brief description of the issue"
               error={errors.title?.message}
               {...register('title')}
             />
           )}
           <Textarea
-            label={asset ? 'Deskripsi Masalah' : 'Deskripsi'}
+            label={asset ? 'Issue Description' : 'Description'}
             id="description"
-            placeholder="Deskripsi detail masalah"
+            placeholder="Detailed description of the issue"
             error={errors.description?.message}
             {...register('description')}
           />
           <div className={asset ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-1 sm:grid-cols-2 gap-4'}>
             {!asset && (
               <Select
-                label="Kategori"
+                label="Category"
                 id="category"
                 options={categories.map((c) => ({ value: c, label: formatTicketCategory(c) }))}
                 error={errors.category?.message}
@@ -160,7 +160,7 @@ export function CreateTicketPage() {
               />
             )}
             <Select
-              label="Prioritas"
+              label="Priority"
               id="priority"
               options={priorities.map((p) => ({ value: p, label: formatTicketPriority(p) }))}
               error={errors.priority?.message}
@@ -169,16 +169,16 @@ export function CreateTicketPage() {
           </div>
           {!asset && (
             <Input
-              label="Lokasi"
+              label="Location"
               id="location"
-              placeholder="Gedung, lantai, ruangan"
+              placeholder="Building, floor, room"
               error={errors.location?.message}
               {...register('location')}
             />
           )}
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1.5">
-              Foto (opsional)
+              Photo (optional)
             </label>
             <input
               type="file"
@@ -187,15 +187,15 @@ export function CreateTicketPage() {
               className="w-full text-sm text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-brand-primary/20 file:text-brand-primary cursor-pointer"
             />
             {photo && (
-              <img src={photo} alt="Pratinjau" className="mt-2 rounded-xl max-h-40 object-cover" />
+              <img src={photo} alt="Preview" className="mt-2 rounded-xl max-h-40 object-cover" />
             )}
           </div>
           <div className="flex gap-3 pt-2">
             <Button type="submit" loading={isSubmitting}>
-              Kirim Tiket
+              Submit Ticket
             </Button>
             <Button variant="ghost" type="button" onClick={() => navigate('/tickets')}>
-              Batal
+              Cancel
             </Button>
           </div>
         </form>

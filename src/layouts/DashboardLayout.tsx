@@ -6,6 +6,7 @@ import { GlowBackground } from '@/components/ui'
 import { PageTransition } from '@/components/ui'
 import { AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { useTransition } from '@/contexts/TransitionContext'
 import { VendorStatusScreen } from '@/components/vendor/VendorStatusScreen'
 import { isVendorDashboardBlocked, resolveVendorStatus } from '@/utils/vendorStatus'
@@ -14,6 +15,7 @@ export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
   const { user } = useAuth()
+  const { theme } = useTheme()
   const { isActive, signalDashboardReady } = useTransition()
 
   const handlePageAnimationComplete = useCallback(() => {
@@ -32,7 +34,7 @@ export function DashboardLayout() {
   }
 
   return (
-    <div className="flex min-h-screen relative">
+    <div className={`flex min-h-screen relative${theme === 'light' ? ' light-theme' : ''}`}>
       <GlowBackground />
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0 relative z-10">

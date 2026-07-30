@@ -10,7 +10,7 @@ import { PageTransition } from '@/components/ui'
 
 export function LandingPage() {
   return (
-    <PageTransition className="relative min-h-screen">
+    <PageTransition className="relative min-h-screen light-theme">
       <GlowBackground />
       <Navbar />
       <Hero />

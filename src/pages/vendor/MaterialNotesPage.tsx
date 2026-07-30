@@ -44,29 +44,29 @@ export function MaterialNotesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-text-primary">Catatan Material</h2>
+        <h2 className="text-2xl font-bold text-text-primary">Material Notes</h2>
         <p className="text-text-muted text-sm mt-1">
-          Daftar semua material yang telah Anda gunakan di seluruh pekerjaan
+          List of all materials used across all jobs
         </p>
       </div>
 
       <Card>
         {materials.length === 0 ? (
           <EmptyState
-            title="Tidak ada material"
-            description="Belum ada material yang terdaftar atau digunakan."
+            title="No materials"
+            description="No materials registered or used yet."
           />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-text-muted text-xs uppercase">
-                  <th className="py-3 px-4">Pekerjaan</th>
-                  <th className="py-3 px-4">Nama Material</th>
-                  <th className="py-3 px-4">Jumlah</th>
-                  <th className="py-3 px-4">Ditambahkan Oleh</th>
-                  <th className="py-3 px-4">Tanggal</th>
-                  <th className="py-3 px-4">Catatan</th>
+                  <th className="py-3 px-4">Job</th>
+                  <th className="py-3 px-4">Material Name</th>
+                  <th className="py-3 px-4">Qty</th>
+                  <th className="py-3 px-4">Added By</th>
+                  <th className="py-3 px-4">Date</th>
+                  <th className="py-3 px-4">Notes</th>
                 </tr>
               </thead>
               <tbody>

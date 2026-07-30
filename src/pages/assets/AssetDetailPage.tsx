@@ -36,7 +36,7 @@ interface AssetDetailPageProps {
 
 function HistoryTimeline({ histories }: { histories: AssetHistory[] }) {
   if (histories.length === 0) {
-    return <p className="text-text-muted text-sm">Belum ada riwayat perbaikan.</p>
+    return <p className="text-text-muted text-sm">No maintenance history yet.</p>
   }
 
   return (
@@ -53,7 +53,7 @@ function HistoryTimeline({ histories }: { histories: AssetHistory[] }) {
             <p className="text-xs text-text-muted">{formatDate(history.date)}</p>
             <p className="text-text-primary font-medium mt-1">{history.problem}</p>
             <p className="text-text-secondary text-sm mt-1">{history.action}</p>
-            <p className="text-text-muted text-xs mt-1">Teknisi: {history.technician}</p>
+            <p className="text-text-muted text-xs mt-1">Technician: {history.technician}</p>
           </div>
         </div>
       ))}
@@ -123,7 +123,7 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
   if (!asset) {
     return (
       <div className="text-center py-16">
-        <p className="text-text-muted">Aset tidak ditemukan</p>
+        <p className="text-text-muted">Asset not found</p>
       </div>
     )
   }
@@ -140,19 +140,19 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
             className="mb-4"
             onClick={() => navigate(isAuthenticated ? '/assets' : '/')}
           >
-            Kembali
+            Back
           </Button>
         )}
 
       <header className="mb-6">
         <p className="text-sm uppercase tracking-wider text-brand-primary font-semibold">
-          Informasi Aset
+          Asset Information
         </p>
         <h1 className="text-3xl md:text-4xl font-bold text-text-primary mt-2">
           {asset.name}
         </h1>
         <p className="text-text-muted mt-2">
-          Detail siap scan, status pemeliharaan, dan tindakan layanan.
+          Scan-ready details, maintenance status, and service actions.
         </p>
       </header>
 
@@ -160,7 +160,7 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
         <Card>
           <div className="flex items-start justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-text-primary">Detail Aset</h2>
+              <h2 className="text-xl font-semibold text-text-primary">Asset Details</h2>
               <p className="text-sm font-mono text-text-muted mt-1">{asset.id}</p>
             </div>
             <Badge value={formatAssetCategory(asset.category)} />
@@ -168,30 +168,30 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div className="rounded-2xl bg-white/5 p-4">
-              <span className="text-text-muted">Nama Aset</span>
+              <span className="text-text-muted">Asset Name</span>
               <p className="text-text-primary font-medium mt-1">{asset.name}</p>
             </div>
             <div className="rounded-2xl bg-white/5 p-4">
-              <span className="text-text-muted">ID Aset</span>
+              <span className="text-text-muted">Asset ID</span>
               <p className="text-text-primary font-mono mt-1">{asset.id}</p>
             </div>
             <div className="rounded-2xl bg-white/5 p-4">
-              <span className="text-text-muted">Merek</span>
+              <span className="text-text-muted">Brand</span>
               <p className="text-text-primary font-medium mt-1">{asset.brand}</p>
             </div>
             <div className="rounded-2xl bg-white/5 p-4">
-              <span className="text-text-muted">Nomor Serial</span>
+              <span className="text-text-muted">Serial Number</span>
               <p className="text-text-primary font-mono mt-1 break-all">{asset.serialNumber}</p>
             </div>
             <div className="rounded-2xl bg-white/5 p-4 sm:col-span-2">
-              <span className="text-text-muted">Lokasi</span>
+              <span className="text-text-muted">Location</span>
               <p className="text-text-primary font-medium mt-1">{asset.location}</p>
             </div>
           </div>
         </Card>
 
         <Card className="text-center">
-          <h2 className="text-xl font-semibold text-text-primary mb-4">Status Saat Ini</h2>
+          <h2 className="text-xl font-semibold text-text-primary mb-4">Current Status</h2>
           <div ref={setStatusSvgRef} className="bg-white p-4 rounded-xl inline-block mb-4">
             <QRCode value={getAssetUrl(asset.id)} size={150} />
           </div>
@@ -202,9 +202,9 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
             Download QR Code
           </Button>
           <div className="mt-5 text-left rounded-2xl bg-white/5 p-4">
-            <span className="text-text-muted text-sm">Pemeliharaan Terakhir</span>
+            <span className="text-text-muted text-sm">Last Maintenance</span>
             <p className="text-text-primary font-medium mt-1">
-              {lastMaintenance ? formatDate(lastMaintenance.date) : 'Belum ada pemeliharaan'}
+              {lastMaintenance ? formatDate(lastMaintenance.date) : 'No maintenance yet'}
             </p>
             {lastMaintenance && (
               <p className="text-text-muted text-xs mt-2">{lastMaintenance.problem}</p>
@@ -216,14 +216,14 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
       <Card>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h3 className="text-lg font-semibold text-text-primary">Riwayat Terbaru</h3>
+            <h3 className="text-lg font-semibold text-text-primary">Recent History</h3>
             <p className="text-text-muted text-sm">
-              {showFullHistory ? 'Linimasa perbaikan lengkap' : 'Aktivitas pemeliharaan terbaru'}
+              {showFullHistory ? 'Full maintenance timeline' : 'Recent maintenance activity'}
             </p>
           </div>
           {canManageHistory && !showHistoryForm && (
             <Button size="sm" onClick={() => setShowHistoryForm(true)}>
-              Tambah Entri
+              Add Entry
             </Button>
           )}
         </div>
@@ -233,13 +233,13 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
             onSubmit={handleSubmit(onAddHistory)}
             className="space-y-4 mb-6 p-4 rounded-xl bg-white/5"
           >
-            <Input label="Tanggal" type="date" error={errors.date?.message} {...register('date')} />
-            <Input label="Masalah" error={errors.problem?.message} {...register('problem')} />
-            <Textarea label="Tindakan yang Dilakukan" error={errors.action?.message} {...register('action')} />
-            <Input label="Teknisi" error={errors.technician?.message} {...register('technician')} />
+            <Input label="Date" type="date" error={errors.date?.message} {...register('date')} />
+            <Input label="Issue" error={errors.problem?.message} {...register('problem')} />
+            <Textarea label="Action Taken" error={errors.action?.message} {...register('action')} />
+            <Input label="Technician" error={errors.technician?.message} {...register('technician')} />
             <div className="flex gap-3">
               <Button type="submit" loading={isSubmitting} size="sm">
-                Simpan
+                Save
               </Button>
               <Button
                 variant="ghost"
@@ -247,7 +247,7 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
                 type="button"
                 onClick={() => setShowHistoryForm(false)}
               >
-                Batal
+                Cancel
               </Button>
             </div>
           </form>
@@ -264,20 +264,20 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
             onClick={() => setShowFullHistory((current) => !current)}
             className="w-full"
           >
-            {showFullHistory ? 'Tampilkan Riwayat Terbaru' : 'Lihat Riwayat Lengkap'}
+            {showFullHistory ? 'Show Recent History' : 'View Full History'}
           </Button>
           <Button
             size="lg"
             onClick={() => navigate(`/tickets/create?assetId=${asset.id}`)}
             className="w-full"
           >
-            Laporkan Masalah
+            Report Issue
           </Button>
         </div>
         {isPublic && (
           <div className="text-center mt-4">
             <Link to="/login" className="text-sm text-text-muted hover:text-text-primary">
-              Login ke ITFlow
+              Login to ITFlow
             </Link>
           </div>
         )}
@@ -292,7 +292,7 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
         <div className="relative z-10">
           <div className="text-center mb-8">
             <Logo size="md" className="justify-center" />
-            <p className="text-text-muted text-sm mt-2">Pemindaian QR Code Aset</p>
+            <p className="text-text-muted text-sm mt-2">Asset QR Code Scan</p>
           </div>
           {content}
         </div>

@@ -74,7 +74,7 @@ export function ExtensionRequestPage() {
         {
           id: `vtl-${Date.now()}`,
           timestamp: new Date().toISOString(),
-          activity: `Pengajuan perpanjangan akun: +${days} hari. Alasan: ${reason.trim()}`,
+          activity: `Account extension request: +${days} days. Reason: ${reason.trim()}`,
         },
       ]
 

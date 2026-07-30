@@ -11,15 +11,15 @@ export function AccountTimelinePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-text-primary">Timeline Akun</h2>
-        <p className="text-text-muted text-sm mt-1">Riwayat aktivitas status dan pendaftaran akun vendor Anda</p>
+        <h2 className="text-2xl font-bold text-text-primary">Account Timeline</h2>
+        <p className="text-text-muted text-sm mt-1">History of your vendor account status and registration activity</p>
       </div>
 
       <Card className="max-w-2xl">
         {timeline.length === 0 ? (
           <EmptyState
-            title="Tidak ada riwayat"
-            description="Belum ada riwayat aktivitas akun yang tercatat."
+            title="No history"
+            description="No account activity history recorded yet."
           />
         ) : (
           <div className="flow-root py-4">

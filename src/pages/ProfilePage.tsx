@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { formatRole } from '@/utils/formatters'
 
 const schema = z.object({
-  name: z.string().min(2, 'Nama harus terdiri dari minimal 2 karakter'),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
 })
 
 type FormData = z.infer<typeof schema>
@@ -48,30 +48,30 @@ export function ProfilePage() {
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-text-muted">Departemen</span>
+            <span className="text-text-muted">Department</span>
             <p className="text-text-primary">{user.department}</p>
           </div>
           <div>
-            <span className="text-text-muted">ID User</span>
+            <span className="text-text-muted">User ID</span>
             <p className="text-text-primary font-mono">{user.id}</p>
           </div>
         </div>
       </Card>
 
       <Card>
-        <h3 className="text-lg font-semibold text-text-primary mb-4">Edit Profil</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-4">Edit Profile</h3>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
-            label="Nama Tampilan"
+            label="Display Name"
             id="name"
             error={errors.name?.message}
             {...register('name')}
           />
           {saved && (
-            <p className="text-sm text-green-400">Profil berhasil diperbarui!</p>
+            <p className="text-sm text-green-400">Profile updated successfully!</p>
           )}
           <Button type="submit" loading={isSubmitting}>
-            Simpan Perubahan
+            Save Changes
           </Button>
         </form>
       </Card>

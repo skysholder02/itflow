@@ -30,9 +30,9 @@ export function TicketDetailPage() {
   if (!ticket) {
     return (
       <div className="text-center py-16">
-        <p className="text-text-muted">Tiket tidak ditemukan</p>
+        <p className="text-text-muted">Ticket not found</p>
         <Button variant="ghost" className="mt-4" onClick={() => navigate('/tickets')}>
-          Kembali ke Tiket
+          Back to Tickets
         </Button>
       </div>
     )
@@ -65,7 +65,7 @@ export function TicketDetailPage() {
   return (
     <div className="max-w-3xl">
       <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate('/tickets')}>
-        ← Kembali ke Tiket
+        ← Back to Tickets
       </Button>
 
       <Card className="mb-6">
@@ -80,19 +80,19 @@ export function TicketDetailPage() {
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-text-muted">Pelapor</span>
+            <span className="text-text-muted">Reporter</span>
             <p className="text-text-primary">{ticket.reporterName}</p>
           </div>
           <div>
-            <span className="text-text-muted">Lokasi</span>
+            <span className="text-text-muted">Location</span>
             <p className="text-text-primary">{ticket.location}</p>
           </div>
           <div>
-            <span className="text-text-muted">Dibuat</span>
+            <span className="text-text-muted">Created</span>
             <p className="text-text-primary">{formatDateTime(ticket.createdAt)}</p>
           </div>
           <div>
-            <span className="text-text-muted">Diperbarui</span>
+            <span className="text-text-muted">Updated</span>
             <p className="text-text-primary">{formatDateTime(ticket.updatedAt)}</p>
           </div>
         </div>
@@ -101,7 +101,7 @@ export function TicketDetailPage() {
           <div className="mt-6 rounded-2xl bg-white/5 p-4 border border-white/6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-text-muted text-sm">Aset Terkait</span>
+                <span className="text-text-muted text-sm">Related Asset</span>
                 <p className="text-text-primary font-medium mt-1">
                   {ticket.assetName ?? ticket.assetId}
                 </p>
@@ -115,7 +115,7 @@ export function TicketDetailPage() {
                 size="sm"
                 onClick={() => navigate(`/assets/manage/${ticket.assetId}`)}
               >
-                Lihat Aset
+                View Asset
               </Button>
             </div>
           </div>
@@ -124,7 +124,7 @@ export function TicketDetailPage() {
         {ticket.photo && (
           <img
             src={ticket.photo}
-            alt="Lampiran tiket"
+            alt="Ticket attachment"
             className="mt-4 rounded-xl max-h-60 object-cover"
           />
         )}
@@ -132,7 +132,7 @@ export function TicketDetailPage() {
         {role && ticketService.canUpdateStatus(role) && (
           <div className="mt-6 pt-4 border-t border-white/6">
             <Select
-              label="Perbarui Status"
+              label="Update Status"
               id="status"
               options={(['Open', 'In Progress', 'Completed'] as TicketStatus[]).map((s) => ({
                 value: s,
@@ -146,9 +146,9 @@ export function TicketDetailPage() {
       </Card>
 
       <Card>
-        <h3 className="text-lg font-semibold text-text-primary mb-4">Catatan</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-4">Notes</h3>
         {ticket.notes.length === 0 ? (
-          <p className="text-text-muted text-sm mb-4">Belum ada catatan.</p>
+          <p className="text-text-muted text-sm mb-4">No notes yet.</p>
         ) : (
           <div className="space-y-4 mb-6">
             {ticket.notes.map((note) => (
@@ -166,12 +166,12 @@ export function TicketDetailPage() {
           <div className="space-y-3">
             <Textarea
               id="note"
-              placeholder="Tambah catatan..."
+              placeholder="Add a note..."
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
             />
             <Button onClick={handleAddNote} loading={submitting} disabled={!noteText.trim()}>
-              Tambah Catatan
+              Add Note
             </Button>
           </div>
         )}

@@ -3,7 +3,7 @@ import { PageTransition } from '@/components/ui'
 
 export function LoginPage() {
   return (
-    <PageTransition>
+    <PageTransition className="light-theme">
       <LoginForm />
     </PageTransition>
   )

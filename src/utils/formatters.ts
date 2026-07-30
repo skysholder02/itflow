@@ -1,3 +1,17 @@
+export function timeAgo(date: string): string {
+  const now = Date.now()
+  const then = new Date(date).getTime()
+  const diffSec = Math.floor((now - then) / 1000)
+  if (diffSec < 60) return 'just now'
+  const diffMin = Math.floor(diffSec / 60)
+  if (diffMin < 60) return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`
+  const diffHour = Math.floor(diffMin / 60)
+  if (diffHour < 24) return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`
+  const diffDay = Math.floor(diffHour / 24)
+  if (diffDay < 7) return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`
+  return formatDate(date)
+}
+
 export function formatDate(date: string): string {
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -18,7 +32,7 @@ export function formatDateTime(date: string): string {
 
 export function formatRole(role: string): string {
   const map: Record<string, string> = {
-    karyawan: 'Karyawan',
+    karyawan: 'Employee',
     itsupport: 'ITSupport',
     leaderit: 'LeaderIT',
     vendor: 'Vendor',
@@ -38,38 +52,38 @@ export function formatVendorStatus(status: string): string {
 
 export function formatJobStatus(status: string): string {
   const map: Record<string, string> = {
-    Pending: 'Menunggu',
-    Approved: 'Disetujui',
-    'In Progress': 'Dalam Proses',
-    'Need Extension': 'Butuh Perpanjangan',
-    Completed: 'Selesai',
-    Cancelled: 'Dibatalkan',
+    Pending: 'Pending',
+    Approved: 'Approved',
+    'In Progress': 'In Progress',
+    'Need Extension': 'Need Extension',
+    Completed: 'Completed',
+    Cancelled: 'Cancelled',
   }
   return map[status] ?? status
 }
 
 export function formatTicketStatus(status: string): string {
   const map: Record<string, string> = {
-    Open: 'Terbuka',
-    'In Progress': 'Dalam Proses',
-    Completed: 'Selesai',
+    Open: 'Open',
+    'In Progress': 'In Progress',
+    Completed: 'Completed',
   }
   return map[status] ?? status
 }
 
 export function formatTicketPriority(priority: string): string {
   const map: Record<string, string> = {
-    Critical: 'Kritis',
-    High: 'Tinggi',
-    Medium: 'Sedang',
-    Low: 'Rendah',
+    Critical: 'Critical',
+    High: 'High',
+    Medium: 'Medium',
+    Low: 'Low',
   }
   return map[priority] ?? priority
 }
 
 export function formatTicketCategory(category: string): string {
   const map: Record<string, string> = {
-    Other: 'Lainnya',
+    Other: 'Other',
   }
   return map[category] ?? category
 }
@@ -83,9 +97,9 @@ export function formatAssetCategory(category: string): string {
 
 export function formatAssetStatus(status: string): string {
   const map: Record<string, string> = {
-    Active: 'Aktif',
+    Active: 'Active',
     Maintenance: 'Maintenance',
-    Retired: 'Tidak Aktif',
+    Retired: 'Inactive',
   }
   return map[status] ?? status
 }
