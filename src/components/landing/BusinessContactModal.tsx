@@ -1,35 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ContactSalesForm } from './ContactSalesForm'
 
 interface BusinessContactModalProps {
   isOpen: boolean
   onClose: () => void
 }
-
-const mailBody = [
-  'Hello ITFlow Team,',
-  '',
-  'Company Name:',
-  '',
-  'Industry:',
-  '',
-  'I would like to know more about ITFlow.',
-  '',
-  'Please contact us.',
-  '',
-  'Thank you.',
-].join('\n')
-
-const waMessage = [
-  'Hello ITFlow Team,',
-  '',
-  'I am interested in learning more about ITFlow for my company. Could you please contact us?',
-  '',
-  'Thank you.',
-].join('\n')
-
-const mailtoHref = `mailto:?subject=${encodeURIComponent('ITFlow Business Inquiry')}&body=${encodeURIComponent(mailBody)}`
-const waHref = `https://api.whatsapp.com/send?text=${encodeURIComponent(waMessage)}`
 
 const staggerVariants = {
   hidden: {},
@@ -44,6 +20,8 @@ const itemVariants = {
 }
 
 export function BusinessContactModal({ isOpen, onClose }: BusinessContactModalProps) {
+  const [channel, setChannel] = useState<'email' | 'whatsapp' | null>(null)
+
   useEffect(() => {
     if (isOpen) {
       document.body.classList.add('modal-open')
@@ -52,6 +30,12 @@ export function BusinessContactModal({ isOpen, onClose }: BusinessContactModalPr
     }
     return () => {
       document.body.classList.remove('modal-open')
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) {
+      setChannel(null)
     }
   }, [isOpen])
 
@@ -119,58 +103,78 @@ export function BusinessContactModal({ isOpen, onClose }: BusinessContactModalPr
               We'll help you choose the best solution for your workflow.
             </p>
 
-            <motion.div
-              variants={staggerVariants}
-              initial="hidden"
-              animate="visible"
-              className="mt-6 space-y-3"
-            >
-              {['IT Consultation', 'Custom Development', 'Infrastructure Deployment'].map((item) => (
+            <AnimatePresence mode="wait" initial={false}>
+              {channel ? (
                 <motion.div
-                  key={item}
-                  variants={itemVariants}
-                  transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
-                  className="flex items-center gap-3"
+                  key="form"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -14 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <span className="w-5 h-5 rounded-full bg-brand-accent/10 flex items-center justify-center flex-shrink-0">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </span>
-                  <span className="text-sm text-text-primary">{item}</span>
+                  <ContactSalesForm onBack={() => setChannel(null)} onClose={onClose} />
                 </motion.div>
-              ))}
-            </motion.div>
+              ) : (
+                <motion.div
+                  key="services"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -14 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <motion.div
+                    variants={staggerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="mt-6 space-y-3"
+                  >
+                    {['IT Consultation', 'Custom Development', 'Infrastructure Deployment'].map((item) => (
+                      <motion.div
+                        key={item}
+                        variants={itemVariants}
+                        transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
+                        className="flex items-center gap-3"
+                      >
+                        <span className="w-5 h-5 rounded-full bg-brand-accent/10 flex items-center justify-center flex-shrink-0">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </span>
+                        <span className="text-sm text-text-primary">{item}</span>
+                      </motion.div>
+                    ))}
+                  </motion.div>
 
-            <div className="mt-10 space-y-2.5">
-              <a
-                href={mailtoHref}
-                className="w-full flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl bg-brand-primary text-white text-sm font-medium hover:bg-[#1a8aff] hover:shadow-[0_8px_30px_rgba(0,122,255,0.35)] hover:-translate-y-0.5 transition-all"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-                Contact Sales
-              </a>
-              <a
-                href={waHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group w-full flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl bg-white/5 text-text-primary border border-white/10 text-sm font-medium hover:bg-green-500/5 hover:border-green-500/20 hover:-translate-y-0.5 transition-all"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 group-hover:text-green-600 transition-colors">
-                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                </svg>
-                WhatsApp
-              </a>
-              <button
-                onClick={onClose}
-                className="w-full py-3 text-sm text-text-muted hover:text-text-primary hover:scale-[1.01] transition-all cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
+                  <div className="mt-10 space-y-2.5">
+                    <button
+                      onClick={() => setChannel('email')}
+                      className="w-full flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl bg-brand-primary text-white text-sm font-medium hover:bg-[#1a8aff] hover:shadow-[0_8px_30px_rgba(0,122,255,0.35)] hover:-translate-y-0.5 transition-all cursor-pointer"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                      </svg>
+                      Contact Sales
+                    </button>
+                    <button
+                      onClick={() => setChannel('whatsapp')}
+                      className="group w-full flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl bg-white/5 text-text-primary border border-white/10 text-sm font-medium hover:bg-green-500/5 hover:border-green-500/20 hover:-translate-y-0.5 transition-all cursor-pointer"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 group-hover:text-green-600 transition-colors">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                      </svg>
+                      WhatsApp
+                    </button>
+                    <button
+                      onClick={onClose}
+                      className="w-full py-3 text-sm text-text-muted hover:text-text-primary hover:scale-[1.01] transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </motion.div>
       )}
