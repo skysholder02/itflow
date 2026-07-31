@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚀 ITFlow
+#  ITFlow
 
 ### One Platform for All IT Services
 
