@@ -18,7 +18,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored === 'light' || stored === 'dark') return stored
     } catch {}
-    return 'light'
+    return 'dark'
   })
 
   const [overlay, setOverlay] = useState<Theme | null>(null)

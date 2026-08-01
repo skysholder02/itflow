@@ -47,14 +47,14 @@ export function BusinessContactModal({ isOpen, onClose }: BusinessContactModalPr
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4"
         >
           <motion.div
             initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
             animate={{ opacity: 1, backdropFilter: 'blur(4px)' }}
             exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="absolute inset-0 bg-black/40"
+            className="fixed inset-0 bg-black/40"
             onClick={onClose}
           />
 
@@ -77,7 +77,7 @@ export function BusinessContactModal({ isOpen, onClose }: BusinessContactModalPr
               y: { duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.05 },
               boxShadow: { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 },
             }}
-            className="relative w-full max-w-md glass-card p-9"
+            className="relative w-full max-w-md glass-card p-9 my-auto"
           >
             <button
               onClick={onClose}
