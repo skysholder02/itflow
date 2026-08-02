@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Loader2 } from 'lucide-react'
 import { Input, Select, Textarea } from '@/components/ui'
 import {
   buildContactSalesEmailParams,
@@ -16,15 +17,46 @@ interface ContactSalesFormProps {
 }
 
 const schema = z.object({
-  fullName: z.string().min(2, 'Please enter your full name'),
-  companyName: z.string().min(2, 'Please enter your company name'),
-  businessEmail: z.string().email('Please enter a valid business email'),
+  fullName: z
+    .string()
+    .transform((v) => v.trim().replace(/\s{2,}/g, ' '))
+    .pipe(
+      z
+        .string()
+        .min(3, 'Full name must be at least 3 characters')
+        .max(100, 'Full name must be 100 characters or fewer')
+        .refine((v) => /^[A-Za-z' .-]+$/.test(v), 'Full name may only contain letters, spaces, apostrophes, periods, and hyphens'),
+    ),
+  companyName: z
+    .string()
+    .transform((v) => v.trim().replace(/\s{2,}/g, ' '))
+    .pipe(
+      z
+        .string()
+        .min(5, 'Company name must be at least 5 characters')
+        .max(150, 'Company name must be 150 characters or fewer')
+        .refine((v) => /^[A-Za-z0-9 .&-]+$/.test(v), 'Company name may only contain letters, numbers, spaces, periods, ampersands, and hyphens')
+        .refine((v) => /^PT\.?/i.test(v), 'Company name must begin with "PT" or "PT."'),
+    ),
+  businessEmail: z
+    .string()
+    .transform((v) => v.trim().toLowerCase())
+    .pipe(z.string().min(1, 'Please enter a business email').email('Please enter a valid business email')),
   phoneNumber: z
     .string()
-    .optional()
-    .refine((v) => !v || /^[0-9+\-\s()]{7,20}$/.test(v), 'Please enter a valid phone number'),
+    .transform((v) => v.replace(/[\s()-]/g, ''))
+    .refine((v) => v.length > 0, 'Please enter a phone number')
+    .refine((v) => /^[0-9]{10,15}$/.test(v), 'Please enter a valid 10–15 digit phone number'),
   subject: z.string().min(1, 'Please select a subject'),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
+  message: z
+    .string()
+    .transform((v) => v.trim())
+    .pipe(
+      z
+        .string()
+        .min(10, 'Message must be at least 10 characters')
+        .max(1000, 'Message must be 1000 characters or fewer'),
+    ),
 })
 
 type FormData = z.infer<typeof schema>
@@ -40,26 +72,80 @@ const subjectOptions = [
 type Toast = { id: number; type: 'success' | 'error'; message: string }
 
 export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
-  const [submitting, setSubmitting] = useState(false)
+  const [sendStatus, setSendStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
   const [toast, setToast] = useState<Toast | null>(null)
   const toastTimer = useRef<number | undefined>(undefined)
   const closeTimer = useRef<number | undefined>(undefined)
+  const sentTimer = useRef<number | undefined>(undefined)
   const toastIdRef = useRef(0)
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: { subject: '' },
   })
+
+  const values = watch()
+
+  type FieldName = keyof FormData
+  const feedback = (name: FieldName): { error?: string; success?: string } => {
+    const message = errors[name]?.message
+    const raw = values[name]
+    const filled = typeof raw === 'string' && raw.trim().length > 0
+    if (message) return { error: message }
+    if (filled) return { success: 'Looks good' }
+    return {}
+  }
+
+  const normalizePasteValue = (name: FieldName, value: string): string => {
+    switch (name) {
+      case 'businessEmail':
+        return value.trim().toLowerCase()
+      case 'phoneNumber':
+        return value.replace(/[\s()-]/g, '')
+      case 'companyName':
+      case 'fullName':
+        return value.trim().replace(/\s{2,}/g, ' ')
+      default:
+        return value
+    }
+  }
+
+  const handlePaste = (name: FieldName) => (e: React.ClipboardEvent) => {
+    const field = e.currentTarget as HTMLInputElement | HTMLTextAreaElement
+    const start = field.selectionStart ?? field.value.length
+    const end = field.selectionEnd ?? field.value.length
+    const pasted = e.clipboardData.getData('text')
+    e.preventDefault()
+    const next = field.value.slice(0, start) + normalizePasteValue(name, pasted) + field.value.slice(end)
+    setValue(name, next, { shouldValidate: true, shouldDirty: true })
+  }
+
+  const formIsValid = schema.safeParse(values).success
+
+  const focusFirstInvalid = (invalid: FieldErrors<FormData>) => {
+    const first = (Object.keys(invalid)[0] ?? '') as FieldName | ''
+    if (!first) return
+    const el = document.querySelector<HTMLElement>(`[name="${first}"]`)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      window.setTimeout(() => el.focus({ preventScroll: true }), 300)
+    }
+  }
 
   useEffect(() => {
     return () => {
       window.clearTimeout(toastTimer.current)
       window.clearTimeout(closeTimer.current)
+      window.clearTimeout(sentTimer.current)
     }
   }, [])
 
@@ -70,20 +156,25 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
   }
 
   const onSubmit = async (data: FormData) => {
-    setSubmitting(true)
+    setSendStatus('sending')
     try {
       await contactSalesEmailService.sendEmail(buildContactSalesEmailParams(data))
-      reset()
-      showToast('success', 'Your inquiry was sent successfully. Our team will contact you shortly.')
-      closeTimer.current = window.setTimeout(() => onClose(), 1400)
+      setSendStatus('sent')
+      sentTimer.current = window.setTimeout(() => {
+        reset()
+        showToast('success', 'Your inquiry was sent successfully. Our team will contact you shortly.')
+        closeTimer.current = window.setTimeout(() => onClose(), 1400)
+      }, 800)
     } catch {
+      setSendStatus('idle')
       showToast('error', 'Failed to send your inquiry. Please try again.')
-    } finally {
-      setSubmitting(false)
     }
   }
 
+  const sending = sendStatus !== 'idle'
+
   const onWhatsAppSubmit = (data: FormData) => {
+    if (sending) return
     openContactSalesWhatsApp(data)
     reset()
     closeTimer.current = window.setTimeout(() => onClose(), 400)
@@ -123,71 +214,101 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
         )}
       </AnimatePresence>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit(onSubmit, focusFirstInvalid)} className="space-y-4" noValidate>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 lg:gap-6">
           <Input
             label="Full Name"
             placeholder="Your full name"
-            error={errors.fullName?.message}
+            error={feedback('fullName').error}
+            success={feedback('fullName').success}
             {...register('fullName')}
           />
           <Input
             label="Company Name"
             placeholder="e.g. PT Solusi Utama"
-            error={errors.companyName?.message}
+            error={feedback('companyName').error}
+            success={feedback('companyName').success}
+            onPaste={handlePaste('companyName')}
             {...register('companyName')}
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 lg:gap-6">
           <Input
             label="Business Email"
             type="email"
             placeholder="name@company.com"
-            error={errors.businessEmail?.message}
+            error={feedback('businessEmail').error}
+            success={feedback('businessEmail').success}
+            onPaste={handlePaste('businessEmail')}
             {...register('businessEmail')}
           />
           <Input
             label="Phone Number (optional)"
             type="tel"
             placeholder="e.g. 081234567890"
-            error={errors.phoneNumber?.message}
+            error={feedback('phoneNumber').error}
+            success={feedback('phoneNumber').success}
+            onPaste={handlePaste('phoneNumber')}
             {...register('phoneNumber')}
           />
         </div>
         <Select
           label="Subject"
           options={subjectOptions}
-          error={errors.subject?.message}
+          error={feedback('subject').error}
+          success={feedback('subject').success}
           {...register('subject')}
         />
         <Textarea
           label="Message"
           placeholder="Tell us about your IT needs..."
-          error={errors.message?.message}
+          error={feedback('message').error}
+          success={feedback('message').success}
+          counter={typeof values.message === 'string' ? values.message.replace(/\r\n/g, '\n').length : 0}
+          maxCount={1000}
           {...register('message')}
         />
 
         <div className="space-y-2.5 pt-3">
-          <div className="grid grid-cols-2 gap-3">
+          {formIsValid ? (
+            <p className="flex items-center justify-center gap-1.5 text-xs text-emerald-500/90" role="status" aria-live="polite">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Ready to send
+            </p>
+          ) : (
+            <p className="text-center text-xs text-text-muted">Complete the form to continue.</p>
+          )}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-3">
             <button
               type="submit"
-              disabled={submitting}
-              className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-brand-primary text-white text-sm font-medium hover:bg-[#1a8aff] hover:shadow-[0_8px_30px_rgba(0,122,255,0.35)] hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
+              disabled={sending || !formIsValid}
+              title={formIsValid ? undefined : 'Complete the form to continue'}
+              className="w-full min-w-[170px] flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-brand-primary text-white text-sm font-medium hover:bg-[#1a8aff] hover:shadow-[0_8px_30px_rgba(0,122,255,0.35)] hover:-translate-y-0.5 transition-all disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
             >
-              {submitting ? (
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-              )}
-              {submitting ? 'Sending...' : 'Send Email'}
+              <span className="inline-flex justify-center items-center w-[18px] h-[18px] shrink-0">
+                {sendStatus === 'sending' ? (
+                  <Loader2 className="w-[18px] h-[18px] animate-spin" />
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                    {sendStatus === 'sent' ? (
+                      <polyline points="20 6 9 17 4 12" />
+                    ) : (
+                      <>
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                      </>
+                    )}
+                  </svg>
+                )}
+              </span>
+              {sendStatus === 'sending' ? 'Sending...' : sendStatus === 'sent' ? 'Sent!' : 'Send Email'}
             </button>
             <button
               type="button"
-              disabled={submitting}
-              onClick={() => handleSubmit(onWhatsAppSubmit)()}
+              disabled={sending}
+              onClick={() => handleSubmit(onWhatsAppSubmit, focusFirstInvalid)()}
               className="group w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/5 text-text-primary border border-white/10 text-sm font-medium hover:bg-green-500/5 hover:border-green-500/20 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 cursor-pointer"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 group-hover:text-green-600 transition-colors">
