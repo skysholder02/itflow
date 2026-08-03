@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
-import { ProtectedRoute, RoleGuard } from './guards'
+import { ProtectedRoute, RoleGuard, GuestOnlyRoute, } from './guards'
 import { LandingPage } from '@/pages/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
@@ -30,8 +30,22 @@ import { JobManagementPage } from '@/pages/leader/JobManagementPage'
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route
+  path="/"
+  element={
+    <GuestOnlyRoute>
+      <LandingPage />
+    </GuestOnlyRoute>
+  }
+/>
+      <Route
+  path="/login"
+  element={
+    <GuestOnlyRoute>
+      <LoginPage />
+    </GuestOnlyRoute>
+  }
+/>
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/vendor/extension-request" element={<ExtensionRequestPage />} />
       <Route

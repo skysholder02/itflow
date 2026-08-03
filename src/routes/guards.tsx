@@ -1,42 +1,66 @@
-import { Navigate, useLocation } from 'react-router-dom'
+  import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { Skeleton } from '@/components/ui'
-import type { Role } from '@/types'
-import type { ReactNode } from 'react'
+import { useTransition } from '@/contexts/TransitionContext'
+  import { Skeleton } from '@/components/ui'
+  import type { Role } from '@/types'
+  import type { ReactNode } from 'react'
 
-export function ProtectedRoute({ children }: { children: ReactNode }) {
+  export function ProtectedRoute({ children }: { children: ReactNode }) {
+    const { isAuthenticated, loading } = useAuth()
+    const location = useLocation()
+
+    if (loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <Skeleton className="w-48 h-12" />
+        </div>
+      )
+    }
+
+    if (!isAuthenticated) {
+      return <Navigate to="/login" state={{ from: location }} replace />
+    }
+
+    return <>{children}</>
+  }
+
+export function GuestOnlyRoute({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const { isAuthenticated, loading } = useAuth()
-  const location = useLocation()
+  const { manualLoginInProgress } = useTransition()
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Skeleton className="w-48 h-12" />
-      </div>
-    )
-  }
+    if (loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <Skeleton className="w-48 h-12" />
+        </div>
+      )
+    }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />
-  }
-
-  return <>{children}</>
+if (isAuthenticated && !manualLoginInProgress) {
+  return <Navigate to="/dashboard" replace />
 }
 
-interface RoleGuardProps {
-  children: ReactNode
-  allowedRoles: Role[]
-  fallback?: string
-}
-
-export function RoleGuard({ children, allowedRoles, fallback = '/dashboard' }: RoleGuardProps) {
-  const { role, loading } = useAuth()
-
-  if (loading) return null
-
-  if (!role || !allowedRoles.includes(role)) {
-    return <Navigate to={fallback} replace />
+    return <>{children}</>
   }
 
-  return <>{children}</>
-}
+  interface RoleGuardProps {
+    children: ReactNode
+    allowedRoles: Role[]
+    fallback?: string
+  }
+
+  export function RoleGuard({ children, allowedRoles, fallback = '/dashboard' }: RoleGuardProps) {
+    const { role, loading } = useAuth()
+
+    if (loading) return null
+
+    if (!role || !allowedRoles.includes(role)) {
+      return <Navigate to={fallback} replace />
+    }
+
+    return <>{children}</>
+  }

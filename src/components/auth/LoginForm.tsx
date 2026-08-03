@@ -31,7 +31,13 @@ const roleLabels: Record<Role, string> = {
 export function LoginForm() {
   const { login, refreshUser } = useAuth()
   const navigate = useNavigate()
-  const { startTransition } = useTransition()
+  // ✅ Gunakan endTransition, bukan completeTransition
+  const {
+    startTransition,
+    endTransition,
+    startManualLogin,
+    finishManualLogin,
+  } = useTransition()
   const [error, setError] = useState('')
   const [expiredEmail, setExpiredEmail] = useState<string | null>(null)
   const [rememberedAccount, setRememberedAccount] = useState<{
@@ -55,7 +61,6 @@ export function LoginForm() {
     const checkRememberedAccount = async () => {
       const remembered = getRememberedAccount()
       if (remembered && remembered.status === 'Active') {
-        // Verify the account still exists and is active
         try {
           const user = await userRepo.getById(remembered.userId)
           if (user && user.status === 'Active') {
@@ -67,7 +72,6 @@ export function LoginForm() {
               status: user.status,
             })
           } else {
-            // Account no longer valid, clear remembered
             clearRememberedAccount()
           }
         } catch {
@@ -82,11 +86,21 @@ export function LoginForm() {
     try {
       setError('')
       setExpiredEmail(null)
-      await login(data.email, data.password)
-      // Clear registration info after successful login
-      clearRegistrationInfo()
+
+      // mulai flag manual login
+      startManualLogin()
+      // mulai animasi
       startTransition()
+
+      // baru login
+      await login(data.email, data.password)
+
+      clearRegistrationInfo()
     } catch (err) {
+      // ✅ Pakai endTransition, bukan completeTransition
+      finishManualLogin()
+      endTransition()
+
       if (err instanceof Error && (err.message === VENDOR_PENDING_APPROVAL_ERROR || err.message === ACCOUNT_PENDING_APPROVAL_ERROR)) {
         setError('Your account is still waiting for Leader IT approval.')
         return
@@ -110,8 +124,10 @@ export function LoginForm() {
   }
 
   const handleSessionCreated = async () => {
-    await refreshUser()
+    startManualLogin()
     startTransition()
+
+    await refreshUser()
   }
 
   const handleContinueLogin = async () => {
@@ -124,7 +140,6 @@ export function LoginForm() {
       if (!user || user.status !== 'Active') {
         clearRememberedAccount()
         setRememberedAccount(null)
-        setContinueLoginInProgress(false)
         return
       }
 
@@ -139,10 +154,14 @@ export function LoginForm() {
       // Clear registration tracking
       clearRegistrationInfo()
 
-      // Refresh auth state
-      await refreshUser()
+      // Start transition before refreshing user
+      startManualLogin()
       startTransition()
+      await refreshUser()
     } catch (err) {
+      // ✅ Pakai endTransition, bukan completeTransition
+      finishManualLogin()
+      endTransition()
       console.error('Continue login failed:', err)
     } finally {
       setContinueLoginInProgress(false)

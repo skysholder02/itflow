@@ -13,6 +13,9 @@ interface TransitionContextType {
   transitionId: number
   dashboardReady: boolean
   signalDashboardReady: () => void
+  manualLoginInProgress: boolean
+  startManualLogin: () => void
+  finishManualLogin: () => void
 }
 
 const TransitionContext = createContext<TransitionContextType | null>(null)
@@ -21,6 +24,7 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
   const [isActive, setIsActive] = useState(false)
   const [transitionId, setTransitionId] = useState(0)
   const [dashboardReady, setDashboardReady] = useState(false)
+  const [manualLoginInProgress, setManualLoginInProgress] = useState(false)
 
   const startTransition = useCallback(() => {
     setIsActive(prev => {
@@ -39,6 +43,14 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
     setDashboardReady(true)
   }, [])
 
+  const startManualLogin = useCallback(() => {
+  setManualLoginInProgress(true)
+}, [])
+
+const finishManualLogin = useCallback(() => {
+  setManualLoginInProgress(false)
+}, [])
+
   return (
     <TransitionContext.Provider
       value={{
@@ -48,6 +60,9 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
         transitionId,
         dashboardReady,
         signalDashboardReady,
+        manualLoginInProgress,
+        startManualLogin,
+        finishManualLogin,
       }}
     >
       {children}

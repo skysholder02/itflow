@@ -7,7 +7,14 @@ import { DesktopTransition } from './DesktopTransition'
 import { MobileTransition } from './MobileTransition'
 
 export function LoginTransition() {
-  const { isActive, endTransition, transitionId, dashboardReady } = useTransition()
+  // ✅ Tambahin finishManualLogin di sini
+  const {
+    isActive,
+    endTransition,
+    transitionId,
+    dashboardReady,
+    finishManualLogin,
+  } = useTransition()
   const isMobile = useIsMobile()
   const navigate = useNavigate()
 
@@ -40,21 +47,29 @@ export function LoginTransition() {
     }
   }, [dashboardReady, isActive, shouldProceed])
 
+  // ✅ Tambahin finishManualLogin() di awal
   const onFinish = useCallback(() => {
     if (finishGuardRef.current) return
     finishGuardRef.current = true
+
+    // selesai login manual
+    finishManualLogin()
+
     if (capturedIsMobile) {
       setIsFadingOut(true)
     } else {
       endTransition()
     }
-  }, [capturedIsMobile, endTransition])
+  }, [capturedIsMobile, endTransition, finishManualLogin]) // ✅ tambahin finishManualLogin ke deps
 
+  // ✅ Tambahin finishManualLogin() sebelum endTransition()
   const onOverlayAnimationComplete = useCallback(() => {
     if (!isFadingOut) return
+
+    finishManualLogin()
     endTransition()
     setIsFadingOut(false)
-  }, [isFadingOut, endTransition])
+  }, [isFadingOut, endTransition, finishManualLogin]) // ✅ tambahin finishManualLogin ke deps
 
   const handleWorkspaceReady = useCallback(() => {
     navigate('/dashboard')
