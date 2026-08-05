@@ -20,7 +20,7 @@ class LocalNotificationRepository implements INotificationRepository {
     const notifications = getCollection<Notification>(STORAGE_KEYS.NOTIFICATIONS)
     const index = notifications.findIndex((n) => n.id === id)
     if (index !== -1) {
-      notifications[index].read = true
+      notifications[index].isRead = true
       setCollection(STORAGE_KEYS.NOTIFICATIONS, notifications)
     }
   }
@@ -28,7 +28,7 @@ class LocalNotificationRepository implements INotificationRepository {
   async markAllAsRead(userId: string): Promise<void> {
     const notifications = getCollection<Notification>(STORAGE_KEYS.NOTIFICATIONS)
     const updated = notifications.map((n) =>
-      n.userId === userId ? { ...n, read: true } : n,
+      n.userId === userId ? { ...n, isRead: true } : n,
     )
     setCollection(STORAGE_KEYS.NOTIFICATIONS, updated)
   }

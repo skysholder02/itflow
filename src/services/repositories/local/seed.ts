@@ -8,7 +8,7 @@ import {
   seedNotifications,
   seedJobs,
 } from '@/data/mockData'
-import type { User, Ticket, AssetHistory, Role } from '@/types'
+import type { User, Ticket, AssetHistory, Role, Notification } from '@/types'
 import { normalizeVendorStatus } from '@/utils/vendorStatus'
 
 const REMOVED_DEMO_VENDOR_EMAILS = new Set([
@@ -70,6 +70,14 @@ function migrateHistories(histories: AssetHistory[]): AssetHistory[] {
   }))
 }
 
+function migrateNotifications(notifications: Notification[]): Notification[] {
+  return notifications.map((n) => {
+    if ('isRead' in n) return n
+    const { read, ...rest } = n as Notification & { read: boolean }
+    return { ...rest, isRead: read }
+  })
+}
+
 export function migrateDatabase(): void {
   const users = getItem<User[]>(STORAGE_KEYS.USERS) ?? []
   const migratedUsers = migrateUsers(users)
@@ -87,6 +95,15 @@ export function migrateDatabase(): void {
   const migratedHistories = migrateHistories(histories)
   if (migratedHistories.length > 0 && JSON.stringify(migratedHistories) !== JSON.stringify(histories)) {
     setItem(STORAGE_KEYS.ASSET_HISTORIES, migratedHistories)
+  }
+
+  const notifications = getItem<Notification[]>(STORAGE_KEYS.NOTIFICATIONS) ?? []
+  const migratedNotifications = migrateNotifications(notifications)
+  if (
+    migratedNotifications.length > 0 &&
+    JSON.stringify(migratedNotifications) !== JSON.stringify(notifications)
+  ) {
+    setItem(STORAGE_KEYS.NOTIFICATIONS, migratedNotifications)
   }
 }
 

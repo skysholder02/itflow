@@ -41,15 +41,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ) => (
     <motion.button
       ref={ref}
-      whileHover={disabled || loading ? undefined : { y: -4 }}
+      whileHover={disabled || loading ? undefined : { scale: 1.03 }}
       whileTap={disabled || loading ? undefined : { scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 400, damping: 17 }}
       className={cn(
-        'inline-flex items-center justify-center gap-2 font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
-        variants[variant],
-        sizes[size],
-        className,
-      )}
+  'inline-flex items-center justify-center gap-2 font-medium transition-colors transform-gpu cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
+  variants[variant],
+  sizes[size],
+  className,
+)}
       disabled={disabled || loading}
       {...props}
     >

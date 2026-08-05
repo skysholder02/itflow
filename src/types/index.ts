@@ -129,13 +129,33 @@ export interface CreateAssetHistoryDTO {
   technician: string
 }
 
+export type NotificationType =
+  | 'ticket'
+  | 'asset'
+  | 'vendor'
+  | 'approval'
+  | 'extension'
+  | 'system'
+
+export type NotificationTargetType =
+  | 'ticket'
+  | 'asset'
+  | 'vendor-job'
+  | 'vendor'
+  | 'user'
+  | 'dashboard'
+  | 'profile'
+
 export interface Notification {
   id: string
   userId: string
   title: string
   message: string
-  read: boolean
+  isRead: boolean
   createdAt: string
+  type?: NotificationType
+  targetType?: NotificationTargetType
+  targetId?: string
 }
 
 export interface Announcement {

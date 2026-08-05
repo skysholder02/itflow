@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { notificationService } from '@/services/notificationService'
 import { useAuth } from '@/contexts/AuthContext'
@@ -7,6 +8,9 @@ import { Badge } from '@/components/ui'
 import { formatRole } from '@/utils/formatters'
 import type { Notification } from '@/types'
 import { formatDateTime } from '@/utils/formatters'
+import { getNotificationPath } from '@/utils/notificationNavigation'
+import { getNotificationIcon } from '@/utils/notificationIcons'
+import { groupNotifications } from '@/utils/notificationGrouping'
 
 interface TopBarProps {
   onMenuClick: () => void
@@ -18,6 +22,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (user) {
@@ -35,13 +40,22 @@ export function TopBar({ onMenuClick }: TopBarProps) {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const unreadCount = notifications.filter((n) => !n.isRead).length
+  const groups = groupNotifications(notifications)
 
   const markRead = async (id: string) => {
     await notificationService.markAsRead(id)
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
     )
+  }
+
+  const handleNotificationClick = (n: Notification) => {
+    if (!n.isRead) {
+      void markRead(n.id)
+    }
+    setOpen(false)
+    navigate(getNotificationPath(n))
   }
 
   return (
@@ -115,18 +129,38 @@ export function TopBar({ onMenuClick }: TopBarProps) {
                 {notifications.length === 0 ? (
                   <p className="text-sm text-text-muted p-4 text-center">No notifications</p>
                 ) : (
-                  notifications.map((n) => (
-                    <button
-                      key={n.id}
-                      onClick={() => markRead(n.id)}
-                      className={`w-full text-left p-3 rounded-xl transition-colors cursor-pointer ${
-                        n.read ? 'opacity-60' : 'bg-surface-overlay'
-                      } hover:bg-surface-overlay-hover`}
-                    >
-                      <p className="text-sm font-medium text-text-primary">{n.title}</p>
-                      <p className="text-xs text-text-muted mt-1">{n.message}</p>
-                      <p className="text-xs text-text-muted mt-1">{formatDateTime(n.createdAt)}</p>
-                    </button>
+                  groups.map((group) => (
+                    <div key={group.label}>
+                      <p className="text-[11px] uppercase tracking-wider text-text-muted px-3 pt-2 pb-1">
+                        {group.label}
+                      </p>
+                      {group.items.map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => handleNotificationClick(n)}
+                          className={`w-full text-left p-3 rounded-xl transition-colors cursor-pointer ${
+                            n.isRead ? 'opacity-60' : 'bg-surface-overlay'
+                          } hover:bg-surface-overlay-hover`}
+                        >
+                          <div className="flex items-start gap-2">
+                            <span className="text-base leading-none mt-0.5" aria-hidden="true">
+                              {getNotificationIcon(n)}
+                            </span>
+                            <div className="min-w-0">
+                              <p
+                                className={`text-sm text-text-primary ${
+                                  n.isRead ? 'font-normal' : 'font-bold'
+                                }`}
+                              >
+                                {n.title}
+                              </p>
+                              <p className="text-xs text-text-muted mt-1">{n.message}</p>
+                              <p className="text-xs text-text-muted mt-1">{formatDateTime(n.createdAt)}</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   ))
                 )}
               </div>
