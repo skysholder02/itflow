@@ -155,9 +155,12 @@ export function JobManagementPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
             />
           </div>
-          <Button onClick={() => setCreateModal(true)}>
-            Create New Job
-          </Button>
+          <Button
+  className="w-auto self-auto"
+  onClick={() => setCreateModal(true)}
+>
+  Create New Job
+</Button>
         </div>
       </div>
 

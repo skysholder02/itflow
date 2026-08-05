@@ -1,9 +1,48 @@
 import { jobRepo } from '@/services/repositories'
+import { notificationService } from '@/services/notificationService'
 import type { Job, JobStatus, JobWorker, JobMaterialNote, JobDocumentation, JobTimelineItem, Role } from '@/types'
 
 function getFormattedTime(): string {
   const now = new Date()
   return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '.')
+}
+
+async function notifyJobStatusChange(previous: Job, updated: Job): Promise<void> {
+  const from = previous.status
+  const to = updated.status
+
+  if (from === 'Pending' && to === 'Approved') {
+    await notificationService.create({
+      userId: updated.vendorId,
+      title: 'Job Approved',
+      message: `Job ${updated.id} has been approved and is ready to start`,
+      type: 'vendor',
+      targetType: 'vendor-job',
+      targetId: updated.id,
+    })
+  } else if (from === 'Approved' && to === 'In Progress') {
+    await notificationService.create({
+      userId: updated.leaderId,
+      title: 'Job Started',
+      message: `Job ${updated.id} has been started by the vendor`,
+      type: 'vendor',
+      targetType: 'vendor-job',
+      targetId: updated.id,
+    })
+  } else if (from === 'In Progress' && to === 'Completed') {
+    await Promise.all(
+      [updated.leaderId, updated.vendorId, updated.itSupportId].map((userId) =>
+        notificationService.create({
+          userId,
+          title: 'Job Completed',
+          message: `Job ${updated.id} has been completed`,
+          type: 'vendor',
+          targetType: 'vendor-job',
+          targetId: updated.id,
+        }),
+      ),
+    )
+  }
 }
 
 export const jobService = {
@@ -31,7 +70,7 @@ export const jobService = {
       },
     ]
 
-    return jobRepo.create({
+    const job = await jobRepo.create({
       ...data,
       status: 'Pending',
       timeline: initialTimeline,
@@ -40,6 +79,21 @@ export const jobService = {
       extensionRequests: [],
       ratings: [],
     })
+
+    await Promise.all(
+      [job.vendorId, job.itSupportId].map((userId) =>
+        notificationService.create({
+          userId,
+          title: 'New Vendor Job',
+          message: `You have been assigned to job ${job.title}`,
+          type: 'vendor',
+          targetType: 'vendor-job',
+          targetId: job.id,
+        }),
+      ),
+    )
+
+    return job
   },
 
   async updateJobStatus(id: string, status: JobStatus): Promise<Job> {
@@ -67,10 +121,14 @@ export const jobService = {
       },
     ]
 
-    return jobRepo.update(id, {
+    const updated = await jobRepo.update(id, {
       status,
       timeline: updatedTimeline,
     })
+
+    await notifyJobStatusChange(job, updated)
+
+    return updated
   },
 
   async updateWorkersAttendance(id: string, workers: JobWorker[]): Promise<Job> {
@@ -173,11 +231,22 @@ export const jobService = {
       },
     ]
 
-    return jobRepo.update(id, {
+    const updated = await jobRepo.update(id, {
       status: 'Need Extension',
       extensionRequests: [...job.extensionRequests, newRequest],
       timeline: updatedTimeline,
     })
+
+    await notificationService.create({
+      userId: updated.leaderId,
+      title: 'Extension Requested',
+      message: `Vendor ${updated.vendorName} requested +${additionalDays} days extension for job ${updated.id}`,
+      type: 'extension',
+      targetType: 'vendor-job',
+      targetId: updated.id,
+    })
+
+    return updated
   },
 
   async approveExtension(id: string, requestId: string): Promise<Job> {
@@ -209,12 +278,23 @@ export const jobService = {
       },
     ]
 
-    return jobRepo.update(id, {
+    const updated = await jobRepo.update(id, {
       status: 'In Progress',
       deadline: newDeadline,
       extensionRequests: requests,
       timeline: updatedTimeline,
     })
+
+    await notificationService.create({
+      userId: updated.vendorId,
+      title: 'Extension Approved',
+      message: `Your extension request for job ${updated.id} has been approved`,
+      type: 'extension',
+      targetType: 'vendor-job',
+      targetId: updated.id,
+    })
+
+    return updated
   },
 
   async rejectExtension(id: string, requestId: string, reason: string, whatsapp: string): Promise<Job> {
@@ -243,11 +323,22 @@ export const jobService = {
       },
     ]
 
-    return jobRepo.update(id, {
+    const updated = await jobRepo.update(id, {
       status: 'In Progress', // Revert back to In Progress
       extensionRequests: requests,
       timeline: updatedTimeline,
     })
+
+    await notificationService.create({
+      userId: updated.vendorId,
+      title: 'Extension Rejected',
+      message: `Your extension request for job ${updated.id} has been rejected`,
+      type: 'extension',
+      targetType: 'vendor-job',
+      targetId: updated.id,
+    })
+
+    return updated
   },
 
   async submitRating(id: string, rating: number, comment: string, byRole: 'vendor' | 'itsupport'): Promise<Job> {

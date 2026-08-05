@@ -25,8 +25,16 @@ export function TopBar({ onMenuClick }: TopBarProps) {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (user) {
+    if (!user) return
+
+    const reloadNotifications = () => {
       notificationService.getByUserId(user.id).then(setNotifications)
+    }
+
+    reloadNotifications()
+    window.addEventListener('notifications-changed', reloadNotifications)
+    return () => {
+      window.removeEventListener('notifications-changed', reloadNotifications)
     }
   }, [user])
 

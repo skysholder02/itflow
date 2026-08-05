@@ -52,6 +52,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                 id={feedbackId}
                 type={error ? 'error' : success ? 'success' : undefined}
                 message={error ?? success}
+                reserveSpace={!!label}
               />
             </div>
             <span className={cn('shrink-0 text-xs tabular-nums', counterColor)}>
@@ -63,6 +64,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             id={feedbackId}
             type={error ? 'error' : success ? 'success' : undefined}
             message={error ?? success}
+            reserveSpace={!!label}
           />
         )}
       </div>

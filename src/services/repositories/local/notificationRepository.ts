@@ -1,6 +1,7 @@
 import type { Notification } from '@/types'
 import type { INotificationRepository } from '../types'
 import { STORAGE_KEYS } from '@/utils/storageKeys'
+import { generateNotificationId } from '@/utils/idGenerator'
 import { getCollection, setCollection, seedDatabase } from './seed'
 
 class LocalNotificationRepository implements INotificationRepository {
@@ -14,6 +15,18 @@ class LocalNotificationRepository implements INotificationRepository {
     return notifications
       .filter((n) => n.userId === userId)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  }
+
+  async create(notification: Omit<Notification, 'id'>): Promise<Notification> {
+    this.ensureSeed()
+    const notifications = getCollection<Notification>(STORAGE_KEYS.NOTIFICATIONS)
+    const created: Notification = {
+      ...notification,
+      id: generateNotificationId(),
+    }
+    notifications.push(created)
+    setCollection(STORAGE_KEYS.NOTIFICATIONS, notifications)
+    return created
   }
 
   async markAsRead(id: string): Promise<void> {

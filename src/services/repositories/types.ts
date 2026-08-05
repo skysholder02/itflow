@@ -47,6 +47,7 @@ export interface IAssetHistoryRepository {
 
 export interface INotificationRepository {
   getByUserId(userId: string): Promise<Notification[]>
+  create(notification: Omit<Notification, 'id'>): Promise<Notification>
   markAsRead(id: string): Promise<void>
   markAllAsRead(userId: string): Promise<void>
 }

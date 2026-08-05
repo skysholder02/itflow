@@ -39,6 +39,7 @@ export const firebaseAssetHistoryRepo = {
 
 export const firebaseNotificationRepo = {
   getByUserId: notConfigured,
+  create: notConfigured,
   markAsRead: notConfigured,
   markAllAsRead: notConfigured,
 }

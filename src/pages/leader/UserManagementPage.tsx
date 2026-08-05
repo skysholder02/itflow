@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, Badge, Button, Input, Textarea, Skeleton } from '@/components/ui'
 import { userRepo } from '@/services/repositories'
+import { notificationService } from '@/services/notificationService'
 import type { User, Role } from '@/types'
 import { formatDate } from '@/utils/formatters'
 
@@ -91,6 +92,15 @@ export function UserManagementPage() {
       }
       
       await userRepo.update(approveModal.id, updateData)
+
+      await notificationService.create({
+        userId: approveModal.id,
+        title: 'Account Approved',
+        message: 'Your account has been approved',
+        type: 'approval',
+        targetType: 'profile',
+        targetId: approveModal.id,
+      })
       
       setApproveModal(null)
       loadUsers()
@@ -125,6 +135,15 @@ export function UserManagementPage() {
       }
       
       await userRepo.update(rejectModal.id, updateData)
+
+      await notificationService.create({
+        userId: rejectModal.id,
+        title: 'Account Rejected',
+        message: `Your registration was rejected. Reason: ${reason}`,
+        type: 'approval',
+        targetType: 'profile',
+        targetId: rejectModal.id,
+      })
       
       setRejectModal(null)
       setReason('')
@@ -163,6 +182,15 @@ export function UserManagementPage() {
         ],
       })
 
+      await notificationService.create({
+        userId: user.id,
+        title: 'Extension Approved',
+        message: `Your account extension request has been approved for +${requestedDays} days`,
+        type: 'extension',
+        targetType: 'profile',
+        targetId: user.id,
+      })
+
       setApproveExtModal(null)
       loadUsers()
     } catch (err) {
@@ -197,6 +225,15 @@ export function UserManagementPage() {
             activity: `Account extension rejected. Reason: ${reason}`,
           },
         ],
+      })
+
+      await notificationService.create({
+        userId: user.id,
+        title: 'Extension Rejected',
+        message: `Your extension request was rejected. Reason: ${reason}`,
+        type: 'extension',
+        targetType: 'profile',
+        targetId: user.id,
       })
 
       setRejectExtModal(null)

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, Badge, Button, Input, Textarea, Skeleton } from '@/components/ui'
 import { userRepo } from '@/services/repositories'
+import { notificationService } from '@/services/notificationService'
 import type { User } from '@/types'
 import { formatDate } from '@/utils/formatters'
 
@@ -60,6 +61,15 @@ export function VendorManagementPage() {
         vendorExpiryDate: expiryDate,
         vendorTimeline,
       })
+
+      await notificationService.create({
+        userId: approveModal.id,
+        title: 'Account Approved',
+        message: 'Your vendor account has been approved',
+        type: 'approval',
+        targetType: 'profile',
+        targetId: approveModal.id,
+      })
       
       setApproveModal(null)
       loadVendors()
@@ -86,6 +96,15 @@ export function VendorManagementPage() {
         vendorRejectReason: reason,
         vendorRejectWhatsApp: whatsapp,
         vendorTimeline,
+      })
+
+      await notificationService.create({
+        userId: rejectModal.id,
+        title: 'Account Rejected',
+        message: `Your vendor registration was rejected. Reason: ${reason}`,
+        type: 'approval',
+        targetType: 'profile',
+        targetId: rejectModal.id,
       })
       
       setRejectModal(null)
@@ -128,6 +147,15 @@ export function VendorManagementPage() {
         vendorTimeline,
       })
 
+      await notificationService.create({
+        userId: vendor.id,
+        title: 'Extension Approved',
+        message: `Your account extension request has been approved for +${requestedDays} days`,
+        type: 'extension',
+        targetType: 'profile',
+        targetId: vendor.id,
+      })
+
       setApproveExtModal(null)
       loadVendors()
     } catch (err) {
@@ -165,6 +193,15 @@ export function VendorManagementPage() {
       await userRepo.update(vendor.id, {
         vendorExtensionRequests: requests,
         vendorTimeline,
+      })
+
+      await notificationService.create({
+        userId: vendor.id,
+        title: 'Extension Rejected',
+        message: `Your extension request was rejected. Reason: ${reason}`,
+        type: 'extension',
+        targetType: 'profile',
+        targetId: vendor.id,
       })
 
       setRejectExtModal(null)

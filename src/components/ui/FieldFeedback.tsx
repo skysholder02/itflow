@@ -5,11 +5,19 @@ interface FieldFeedbackProps {
   type?: 'error' | 'success'
   message?: string
   id?: string
+  reserveSpace?: boolean
 }
 
-export function FieldFeedback({ type, message, id }: FieldFeedbackProps) {
+export function FieldFeedback({ type, message, id, reserveSpace = false }: FieldFeedbackProps) {
+  const hasMessage = !!type && !!message
   return (
-    <div className="flex items-center min-h-[1.25rem] text-xs" aria-live="polite">
+    <div
+      className={cn(
+        'flex items-center text-xs',
+        (hasMessage || reserveSpace) && 'min-h-[1.25rem]',
+      )}
+      aria-live="polite"
+    >
       <AnimatePresence initial={false} mode="wait">
         {type && message ? (
           <motion.span
