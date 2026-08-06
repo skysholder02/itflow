@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { notificationService } from '@/services/notificationService'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -21,8 +21,12 @@ export function TopBar({ onMenuClick }: TopBarProps) {
   const { theme, toggleTheme } = useTheme()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [open, setOpen] = useState(false)
+  const [toast, setToast] = useState<{ id: number } | null>(null)
+  const toastTimer = useRef<number | undefined>(undefined)
+  const toastIdRef = useRef(0)
   const ref = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     if (!user) return
@@ -38,15 +42,31 @@ export function TopBar({ onMenuClick }: TopBarProps) {
     }
   }, [user])
 
+  const dismissPopover = () => {
+    window.clearTimeout(toastTimer.current)
+    setToast(null)
+  }
+
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false)
+        dismissPopover()
       }
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
+
+  useEffect(() => {
+    return () => window.clearTimeout(toastTimer.current)
+  }, [])
+
+  const showAlreadyHereToast = () => {
+    setToast({ id: ++toastIdRef.current })
+    window.clearTimeout(toastTimer.current)
+    toastTimer.current = window.setTimeout(() => setToast(null), 2500)
+  }
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
   const groups = groupNotifications(notifications)
@@ -59,11 +79,23 @@ export function TopBar({ onMenuClick }: TopBarProps) {
   }
 
   const handleNotificationClick = (n: Notification) => {
+    const destination = getNotificationPath(n).replace(/\/+$/, '')
+    const current = location.pathname.replace(/\/+$/, '')
+
+    if (current !== destination) {
+      if (!n.isRead) {
+        void markRead(n.id)
+      }
+      setOpen(false)
+      navigate(destination)
+      return
+    }
+
     if (!n.isRead) {
       void markRead(n.id)
     }
     setOpen(false)
-    navigate(getNotificationPath(n))
+    showAlreadyHereToast()
   }
 
   return (
@@ -131,6 +163,58 @@ export function TopBar({ onMenuClick }: TopBarProps) {
                 </span>
               )}
             </button>
+
+            <AnimatePresence>
+              {toast && (
+                <motion.div
+                  key={toast.id}
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.98,
+                    transition: { duration: 0.15, ease: 'easeIn' },
+                  }}
+                  transition={{ type: 'spring', stiffness: 600, damping: 32, mass: 1 }}
+                  role="status"
+                  className="absolute right-0 top-full mt-2 w-64 glass-card notification-popover-glow p-3.5 text-sm"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="shrink-0 w-6 h-6 rounded-full bg-brand-primary text-white flex items-center justify-center shadow-sm shadow-brand-primary/25">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-semibold leading-snug tracking-[-0.01em] text-text-primary">
+                        Already here
+                      </p>
+                      <p className="text-xs leading-relaxed text-text-muted mt-1">
+                        You're already viewing this page.
+                      </p>
+                      <div className="mt-2 flex justify-end">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={dismissPopover}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              dismissPopover()
+                            }
+                          }}
+                          className="cursor-pointer text-xs font-medium text-brand-primary underline-offset-4 transition duration-150 hover:opacity-85 hover:underline"
+                        >
+                          Dismiss
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {open && (
               <div className="absolute right-0 mt-2 w-80 glass-card shadow-card p-2 max-h-96 overflow-y-auto">
