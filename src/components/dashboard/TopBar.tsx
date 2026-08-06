@@ -9,7 +9,7 @@ import { formatRole } from '@/utils/formatters'
 import type { Notification } from '@/types'
 import { formatDateTime } from '@/utils/formatters'
 import { getNotificationPath } from '@/utils/notificationNavigation'
-import { getNotificationIcon } from '@/utils/notificationIcons'
+import { getNotificationTypeDotColor } from '@/utils/notificationIcons'
 import { groupNotifications } from '@/utils/notificationGrouping'
 
 interface TopBarProps {
@@ -235,19 +235,20 @@ export function TopBar({ onMenuClick }: TopBarProps) {
                           } hover:bg-surface-overlay-hover`}
                         >
                           <div className="flex items-start gap-2">
-                            <span className="text-base leading-none mt-0.5" aria-hidden="true">
-                              {getNotificationIcon(n)}
-                            </span>
+                            <div
+                              className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${getNotificationTypeDotColor(n)}`}
+                              aria-hidden="true"
+                            />
                             <div className="min-w-0">
                               <p
                                 className={`text-sm text-text-primary ${
-                                  n.isRead ? 'font-normal' : 'font-bold'
+                                  n.isRead ? 'font-semibold' : 'font-bold'
                                 }`}
                               >
                                 {n.title}
                               </p>
-                              <p className="text-xs text-text-muted mt-1">{n.message}</p>
-                              <p className="text-xs text-text-muted mt-1">{formatDateTime(n.createdAt)}</p>
+                              <p className="text-xs text-text-muted mt-1 line-clamp-2">{n.message}</p>
+                              <p className="text-[11px] text-text-muted mt-1.5">{formatDateTime(n.createdAt)}</p>
                             </div>
                           </div>
                         </button>

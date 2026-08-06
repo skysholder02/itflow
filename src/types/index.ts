@@ -136,6 +136,7 @@ export type NotificationType =
   | 'approval'
   | 'extension'
   | 'system'
+  | 'job'
 
 export type NotificationTargetType =
   | 'ticket'
