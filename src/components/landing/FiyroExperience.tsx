@@ -44,6 +44,9 @@ interface WorkflowChoreographyConfig {
   sceneFocus: { rotationY: number; rotationX: number }
   bgY: [number, number]
   fgY: [number, number]
+  flipStart: number
+  flipStagger: number
+  flipDuration: number
 }
 
 function buildWorkflowChoreography(cfg: WorkflowChoreographyConfig) {
@@ -70,6 +73,19 @@ function buildWorkflowChoreography(cfg: WorkflowChoreographyConfig) {
       scrub: 1,
     },
     defaults: { ease: 'none' },
+  })
+
+  // 3D FLIP — back → front, cascading left → right, bound to scroll scrub.
+  // The card inner rotates 180deg (back face shown) → 0deg (front face shown).
+  // Each card flips in sequence so the wave reads REPORT → ASSIGN → FIX → RESOLVE.
+  const cardInners = q('[data-fiyro-card-inner]')
+  tl.set(cardInners, { rotationY: 180 }, 0)
+  cardInners.forEach((inner, i) => {
+    tl.to(
+      inner,
+      { rotationY: 0, duration: cfg.flipDuration, ease: 'sine.inOut' },
+      cfg.flipStart + i * cfg.flipStagger,
+    )
   })
 
   // PHASE 1 — INTRO: calm, neutral beginning
@@ -191,6 +207,9 @@ export function FiyroExperience() {
           sceneFocus: { rotationY: 3, rotationX: -1.5 },
           bgY: [30, -30],
           fgY: [-40, 40],
+          flipStart: 0.08,
+          flipStagger: 0.12,
+          flipDuration: 0.36,
         })
       })
 
@@ -208,6 +227,9 @@ export function FiyroExperience() {
           sceneFocus: { rotationY: 2, rotationX: -1 },
           bgY: [20, -20],
           fgY: [-24, 24],
+          flipStart: 0.08,
+          flipStagger: 0.08,
+          flipDuration: 0.24,
         })
       })
 
@@ -224,6 +246,16 @@ export function FiyroExperience() {
         })
 
         // Simple mobile choreography — no scene rotation, no translateZ
+        // Gentle 3D flip: back → front, cascading left → right, scrub-bound.
+        const cardInners = q('[data-fiyro-card-inner]')
+        tl.set(cardInners, { rotationY: 180 }, 0)
+        cardInners.forEach((inner, i) => {
+          tl.to(
+            inner,
+            { rotationY: 0, duration: 0.2, ease: 'sine.inOut' },
+            0.04 + i * 0.06,
+          )
+        })
         tl.fromTo(
           q('[data-fiyro-panel]'),
           { opacity: 0.7, y: 18 },
@@ -347,35 +379,92 @@ export function FiyroExperience() {
               <article
                 key={step.number}
                 data-fiyro-panel
-                className="group relative overflow-hidden h-full p-7 rounded-2xl bg-bg-tertiary border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300"
+                className="group relative h-full rounded-2xl bg-bg-tertiary border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300 [transform-style:preserve-3d]"
               >
                 <div
-                  data-fiyro-panel-glow
-                  className="absolute inset-0 rounded-2xl pointer-events-none opacity-0"
-                  style={{
-                    background:
-                      'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.12), transparent 70%)',
-                  }}
-                />
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold tracking-widest text-text-muted">
-                    {step.number}
-                  </span>
-                  <span
+                  data-fiyro-card-inner
+                  className="relative h-full [transform-style:preserve-3d]"
+                >
+                  {/* FRONT FACE — the existing workflow card */}
+                  <div
+                    data-fiyro-card-front
+                    className="relative flex h-full flex-col overflow-hidden rounded-2xl p-7 [backface-visibility:hidden]"
+                  >
+                    <div
+                      data-fiyro-panel-glow
+                      className="absolute inset-0 rounded-2xl pointer-events-none opacity-0"
+                      style={{
+                        background:
+                          'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.12), transparent 70%)',
+                      }}
+                    />
+                    <div className="relative flex items-center justify-between">
+                      <span className="text-xs font-semibold tracking-widest text-text-muted">
+                        {step.number}
+                      </span>
+                      <span
+                        aria-hidden="true"
+                        className="h-1.5 w-1.5 rounded-full bg-brand-primary/50"
+                      />
+                    </div>
+                    <h3 className="relative mt-5 text-base font-semibold text-text-primary">
+                      {step.title}
+                    </h3>
+                    <div
+                      aria-hidden="true"
+                      className="relative mt-3 h-px w-8 bg-gradient-to-r from-brand-primary to-transparent"
+                    />
+                    <p className="relative mt-4 text-sm text-text-secondary leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
+
+                  {/* BACK FACE — minimal premium flip face (initial state: hidden behind front) */}
+                  <div
+                    data-fiyro-card-back
+                    className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl bg-bg-tertiary p-7 [transform:rotateY(180deg)] [backface-visibility:hidden]"
                     aria-hidden="true"
-                    className="h-1.5 w-1.5 rounded-full bg-brand-primary/50"
-                  />
+                  >
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      aria-hidden="true"
+                      style={{
+                        backgroundImage:
+                          'linear-gradient(to right, rgba(148, 163, 184, 0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.07) 1px, transparent 1px)',
+                        backgroundSize: '52px 52px',
+                        maskImage:
+                          'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+                        WebkitMaskImage:
+                          'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+                      }}
+                    />
+                    <div
+                      className="absolute right-[-20%] bottom-[-30%] w-48 h-48 rounded-full pointer-events-none"
+                      aria-hidden="true"
+                      style={{
+                        background:
+                          'radial-gradient(circle at center, rgba(99, 102, 241, 0.08), transparent 62%)',
+                      }}
+                    />
+                    <div className="relative flex items-start justify-between">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                        FIYRO
+                      </span>
+                      <span className="text-xs font-semibold tracking-widest text-brand-primary">
+                        {step.number}
+                      </span>
+                    </div>
+                    <div className="relative mt-auto pt-8">
+                      <div
+                        aria-hidden="true"
+                        className="h-px w-8 bg-gradient-to-r from-brand-primary to-transparent"
+                      />
+                      <span className="block mt-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                        Workflow
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="mt-5 text-base font-semibold text-text-primary">
-                  {step.title}
-                </h3>
-                <div
-                  aria-hidden="true"
-                  className="mt-3 h-px w-8 bg-gradient-to-r from-brand-primary to-transparent"
-                />
-                <p className="mt-4 text-sm text-text-secondary leading-relaxed">
-                  {step.description}
-                </p>
               </article>
             ))}
           </div>
