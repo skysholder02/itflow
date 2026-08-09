@@ -109,7 +109,7 @@ export function RegisterPage() {
         className="w-full max-w-2xl relative z-10 my-8"
       >
         <div className="text-center mb-8">
-          <Logo size="lg" className="justify-center" />
+          <Logo variant="vertical" size="lg" width={150} className="justify-center" forceDark />
           <p className="text-text-muted mt-4">Create your new account</p>
         </div>
 

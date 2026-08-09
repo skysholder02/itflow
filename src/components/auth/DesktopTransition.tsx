@@ -62,7 +62,7 @@ export function DesktopTransition({ onFinish, onDoorsClosed, shouldProceed }: De
             animate={{ opacity: 1, scale: 1 }}
             transition={springConfig}
           >
-            <Logo size="lg" />
+            <Logo variant="vertical" size="lg" width={130} forceDark />
           </motion.div>
         </div>
       )}
@@ -102,7 +102,7 @@ export function DesktopTransition({ onFinish, onDoorsClosed, shouldProceed }: De
               transition={{ duration: 0.6, ease: 'easeOut' }}
               className="mb-8"
             >
-              <Logo size="lg" />
+              <Logo variant="vertical" size="lg" width={130} forceDark />
             </motion.div>
 
             {/* "Secure Workspace" → crossfades to "Workspace Ready" */}

@@ -277,7 +277,7 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
         {isPublic && (
           <div className="text-center mt-4">
             <Link to="/login" className="text-sm text-text-muted hover:text-text-primary">
-              Login to ITFlow
+              Login to FIYRO
             </Link>
           </div>
         )}
@@ -291,7 +291,7 @@ export function AssetDetailPage({ publicView = false }: AssetDetailPageProps) {
         <GlowBackground />
         <div className="relative z-10">
           <div className="text-center mb-8">
-            <Logo size="md" className="justify-center" />
+            <Logo variant="vertical" size="md" width={120} className="justify-center" forceDark />
             <p className="text-text-muted text-sm mt-2">Asset QR Code Scan</p>
           </div>
           {content}

@@ -65,7 +65,7 @@ export function WaitingApprovalPage() {
         className="w-full max-w-lg relative z-10"
       >
         <div className="text-center mb-8">
-          <Logo size="lg" className="justify-center" />
+          <Logo variant="vertical" size="lg" width={120} className="justify-center" forceDark />
         </div>
 
         <Card className="border border-white/10 text-center space-y-5 py-8 px-6">

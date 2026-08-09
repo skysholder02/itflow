@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 const features = [
   {
@@ -64,46 +64,137 @@ const features = [
 ]
 
 export function Features() {
+  const reducedMotion = useReducedMotion()
+  const animate = !reducedMotion
+
+  const headerInitial = animate ? { opacity: 0, y: 20 } : false
+  const headerWhileInView = animate ? { opacity: 1, y: 0 } : undefined
+  const featuredInitial = animate ? { opacity: 0, y: 24, scale: 0.985 } : false
+  const featuredWhileInView = animate ? { opacity: 1, y: 0, scale: 1 } : undefined
+
+  const featured = features[0]
+  const supporting = features.slice(1)
+
   return (
-    <section id="features" className="py-24">
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="features" className="relative py-24 overflow-hidden">
+      {/* Layered background — continues the FiyroExperience depth language */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, rgba(148, 163, 184, 0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.07) 1px, transparent 1px)',
+            backgroundSize: '52px 52px',
+            maskImage:
+              'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+            WebkitMaskImage:
+              'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+          }}
+        />
+        <div
+          className="absolute -left-1/4 top-1/3 w-[600px] h-[600px] rounded-full"
+          style={{
+            background:
+              'radial-gradient(circle at center, rgba(99, 102, 241, 0.05), transparent 60%)',
+          }}
+        />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-6">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={headerInitial}
+          whileInView={headerWhileInView}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
-          className="text-center mb-16"
+          className="max-w-2xl"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-            Everything You Need
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-primary">
+            FIYRO Capabilities
+          </p>
+          <h2 className="mt-4 text-3xl md:text-4xl font-bold tracking-tight text-text-primary leading-tight">
+            Everything You Need to Solve IT Problems.
           </h2>
-          <p className="text-text-muted max-w-2xl mx-auto">
-            A complete IT management platform designed for modern operational environments.
+          <p className="mt-4 text-lg text-text-secondary max-w-xl leading-relaxed">
+            FIYRO structures how your organization handles IT — from problem
+            reporting and assignment to asset management, service delivery, and
+            resolution.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08, duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
-            >
-              <div className="group h-full p-7 rounded-2xl bg-bg-tertiary border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300">
-                <div className="w-11 h-11 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary/15 transition-colors">
-                  {feature.icon}
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-5 gap-5">
+          {/* Featured capability — visually dominant */}
+          <motion.div
+            className="lg:col-span-3"
+            initial={featuredInitial}
+            whileInView={featuredWhileInView}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+          >
+            <div className="group relative overflow-hidden h-full p-8 md:p-10 rounded-2xl bg-bg-secondary border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-300">
+              <div
+                className="absolute inset-0 pointer-events-none"
+                aria-hidden="true"
+                style={{
+                  background:
+                    'radial-gradient(ellipse at 15% 20%, rgba(99, 102, 241, 0.08), transparent 55%)',
+                }}
+              />
+              <div className="relative flex flex-col sm:flex-row sm:items-center gap-6">
+                <div className="shrink-0 w-14 h-14 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center [&>svg]:w-7 [&>svg]:h-7 group-hover:bg-brand-primary/15 transition-colors">
+                  {featured.icon}
                 </div>
-                <h3 className="mt-5 text-base font-semibold text-text-primary">
-                  {feature.title}
-                </h3>
-                <p className="mt-2 text-sm text-text-secondary leading-relaxed">
-                  {feature.description}
-                </p>
+                <div>
+                  <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-text-primary">
+                    {featured.title}
+                  </h3>
+                  <div
+                    aria-hidden="true"
+                    className="mt-3 h-px w-10 bg-gradient-to-r from-brand-primary to-transparent"
+                  />
+                  <p className="mt-4 text-sm md:text-base text-text-secondary leading-relaxed max-w-lg">
+                    {featured.description}
+                  </p>
+                </div>
               </div>
-            </motion.div>
-          ))}
+            </div>
+          </motion.div>
+
+          {/* Supporting capabilities — refined list */}
+          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+            {supporting.map((feature, i) => (
+              <motion.div
+                key={feature.title}
+                initial={featuredInitial}
+                whileInView={featuredWhileInView}
+                viewport={{ once: true }}
+                transition={{
+                  delay: i * 0.07,
+                  duration: 0.5,
+                  ease: [0.25, 1, 0.5, 1],
+                }}
+              >
+                <article className="group h-full p-5 rounded-2xl bg-bg-tertiary border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300">
+                  <div className="flex items-start gap-4">
+                    <div className="shrink-0 w-11 h-11 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center group-hover:bg-brand-primary/15 transition-colors">
+                      {feature.icon}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-text-primary">
+                        {feature.title}
+                      </h3>
+                      <div
+                        aria-hidden="true"
+                        className="mt-2 h-px w-8 bg-gradient-to-r from-brand-primary to-transparent"
+                      />
+                      <p className="mt-2 text-sm text-text-secondary leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

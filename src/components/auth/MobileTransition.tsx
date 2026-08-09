@@ -69,7 +69,7 @@ export function MobileTransition({ onFinish, onWorkspaceReady, shouldProceed }: 
         onAnimationComplete={onContentAnimationComplete}
         className="flex flex-col items-center w-full gap-6"
       >
-        <Logo size="lg" />
+        <Logo variant="vertical" size="lg" width={120} forceDark />
 
         {step === 'workspaceInit' && (
           <motion.div

@@ -97,6 +97,13 @@ body {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .glow-blob-purple,
+  .glow-blob-blue {
+    animation: none;
+  }
+}
+
 @keyframes sweepUp {
   from { transform: translateY(100%); }
   to   { transform: translateY(0); }

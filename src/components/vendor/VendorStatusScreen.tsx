@@ -67,7 +67,7 @@ export function VendorStatusScreen() {
       <GlowBackground />
       <div className="w-full max-w-xl relative z-10 space-y-6">
         <div className="text-center">
-          <Logo size="lg" className="justify-center" />
+          <Logo variant="vertical" size="lg" width={120} className="justify-center" forceDark />
           <h2 className="text-2xl font-bold text-text-primary mt-6">Vendor Account Status</h2>
           <p className="text-text-muted mt-2">{user.vendorCompany}</p>
         </div>

@@ -1,10 +1,10 @@
 <div align="center">
 
-#  ITFlow
+#  FIYRO
 
-### One Platform for All IT Services
+### Fix Your Problem
 
-A modern IT Service Management (ITSM) platform designed to simplify ticket management, asset tracking, and IT operations with an intuitive and responsive user experience.
+FIYRO (**Fix Your Problem**) is a modern IT Service Management platform built to simplify ticket management, asset monitoring, vendor collaboration, and internal IT operations.
 
 ---
 
@@ -20,15 +20,15 @@ A modern IT Service Management (ITSM) platform designed to simplify ticket manag
 
 # 📖 About
 
-ITFlow is a modern **IT Service Management (ITSM)** web application developed to improve how organizations manage their daily IT operations.
+FIYRO is a modern **IT Service Management (ITSM)** platform built to simplify ticket management, asset monitoring, vendor collaboration, and internal IT operations.
 
-Instead of relying on spreadsheets, manual reports, or paper-based requests, ITFlow centralizes every IT process into one platform—from ticket reporting and asset management to service history and analytics.
+Instead of relying on spreadsheets, manual reports, or paper-based requests, FIYRO centralizes every IT process into one platform—from ticket reporting and asset monitoring to vendor collaboration, service history, and analytics.
 
-The goal is to create a faster, more transparent, and more organized workflow for both employees and IT Support teams.
+The goal is to create a faster, more transparent, and more organized workflow for both employees, IT Support teams, and external vendors.
 
 ---
 
-# 🎯 Why ITFlow?
+# 🎯 Why FIYRO?
 
 Many companies still experience common challenges in managing IT services.
 
@@ -38,7 +38,7 @@ Many companies still experience common challenges in managing IT services.
 - ❌ Slow communication between employees and IT Support
 - ❌ Inefficient manual documentation
 
-ITFlow solves these problems by providing one centralized platform that helps teams manage IT operations more efficiently.
+FIYRO solves these problems by providing one centralized platform that helps teams manage IT operations more efficiently.
 
 ---
 
@@ -276,7 +276,7 @@ npm run build
 
 # 🎯 Project Goals
 
-The objective of ITFlow is to build an efficient, user-friendly, and scalable IT Service Management platform that helps organizations manage IT services digitally.
+The objective of FIYRO is to build an efficient, user-friendly, and scalable IT Service Management platform that helps organizations manage IT services digitally.
 
 The system focuses on:
 

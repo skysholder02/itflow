@@ -1,24 +1,24 @@
 export const DEMO_ACCOUNTS = [
   {
-    email: 'employee@itflow.demo',
+    email: 'employee@fiyro.demo',
     password: 'demo123',
     label: 'Employee',
     role: 'karyawan' as const,
   },
   {
-    email: 'support@itflow.demo',
+    email: 'support@fiyro.demo',
     password: 'demo123',
     label: 'ITSupport',
     role: 'itsupport' as const,
   },
   {
-    email: 'leader@itflow.demo',
+    email: 'leader@fiyro.demo',
     password: 'demo123',
     label: 'LeaderIT',
     role: 'leaderit' as const,
   },
   {
-    email: 'vendor@itflow.demo',
+    email: 'vendor@fiyro.demo',
     password: 'demo123',
     label: 'Vendor',
     role: 'vendor' as const,

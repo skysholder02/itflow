@@ -12,8 +12,8 @@ import type { User, Ticket, AssetHistory, Role, Notification } from '@/types'
 import { normalizeVendorStatus } from '@/utils/vendorStatus'
 
 const REMOVED_DEMO_VENDOR_EMAILS = new Set([
-  'vendor_pending@itflow.demo',
-  'vendor_expired@itflow.demo',
+  'vendor_pending@fiyro.demo',
+  'vendor_expired@fiyro.demo',
 ])
 
 const ROLE_MAP: Record<string, string> = {
@@ -118,7 +118,7 @@ export function seedDatabase(): void {
 
   // Ensure the single demo vendor account exists if missing
   const users = getItem<User[]>(STORAGE_KEYS.USERS) ?? []
-  const demoVendor = seedUsers.find((u) => u.email === 'vendor@itflow.demo')
+  const demoVendor = seedUsers.find((u) => u.email === 'vendor@fiyro.demo')
   if (seeded && demoVendor && !users.some((u) => u.email === demoVendor.email)) {
     setItem(STORAGE_KEYS.USERS, [...users, demoVendor])
   }

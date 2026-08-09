@@ -188,7 +188,7 @@ export function LoginForm() {
         className="w-full max-w-sm relative z-10"
       >
         <div className="text-center mb-10">
-          <Logo size="lg" className="justify-center" />
+          <Logo variant="vertical" size="lg" width={150} className="justify-center" forceLight />
           <p className="text-sm text-text-secondary mt-5 font-[450] tracking-[-0.01em]">
             Sign in to your workspace
           </p>

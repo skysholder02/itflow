@@ -144,7 +144,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const content = (
     <div className="flex flex-col h-full">
       <div className="p-6">
-        <Logo size="sm" />
+        <Logo variant="icon" size="sm" width={42} />
       </div>
 
       <nav className="flex-1 px-3 pb-4 space-y-0.5">

@@ -32,7 +32,7 @@ export interface ContactSalesEmailTemplateParams {
 
 export function buildContactSalesEmailParams(data: ContactSalesEmailData): ContactSalesEmailParams {
   return {
-    toName: 'ITFlow Sales Team',
+    toName: 'FIYRO Sales Team',
     fromName: data.fullName,
     fromEmail: data.businessEmail,
     companyName: data.companyName,
@@ -72,7 +72,7 @@ export const contactSalesEmailService: ContactSalesEmailService = new EmailJSCon
 
 export function buildContactSalesWhatsAppMessage(data: ContactSalesEmailData): string {
   return [
-    'Hello ITFlow 👋',
+    'Hello FIYRO 👋',
     '',
     'I would like to request an IT consultation.',
     '',
@@ -94,7 +94,7 @@ export function buildContactSalesWhatsAppMessage(data: ContactSalesEmailData): s
     'Message:',
     `${data.message}`,
     '',
-    'Sent from ITFlow Contact Form',
+    'Sent from FIYRO Contact Form',
   ].join('\n')
 }
 

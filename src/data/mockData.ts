@@ -13,7 +13,7 @@ export const seedUsers: User[] = [
   // ============================================
   {
     id: 'usr-001',
-    email: 'employee@itflow.demo',
+    email: 'employee@fiyro.demo',
     password: 'demo123',
     name: 'Karyawan 1',
     role: 'karyawan',
@@ -22,7 +22,7 @@ export const seedUsers: User[] = [
   },
   {
     id: 'usr-002',
-    email: 'support@itflow.demo',
+    email: 'support@fiyro.demo',
     password: 'demo123',
     name: 'ITSupport',
     role: 'itsupport',
@@ -31,7 +31,7 @@ export const seedUsers: User[] = [
   },
   {
     id: 'usr-003',
-    email: 'leader@itflow.demo',
+    email: 'leader@fiyro.demo',
     password: 'demo123',
     name: 'LeaderIT',
     role: 'leaderit',
@@ -49,7 +49,7 @@ export const seedUsers: User[] = [
   },
   {
     id: 'usr-005',
-    email: 'vendor@itflow.demo',
+    email: 'vendor@fiyro.demo',
     password: 'demo123',
     name: 'Vendor Utama',
     role: 'vendor',
@@ -78,7 +78,7 @@ export const seedUsers: User[] = [
   // ============================================
   {
     id: 'usr-101',
-    email: 'employee.pending@itflow.demo',
+    email: 'employee.pending@fiyro.demo',
     password: 'demo123',
     name: 'Employee Baru',
     role: 'karyawan',
@@ -87,7 +87,7 @@ export const seedUsers: User[] = [
   },
   {
     id: 'usr-102',
-    email: 'itsupport.pending@itflow.demo',
+    email: 'itsupport.pending@fiyro.demo',
     password: 'demo123',
     name: 'IT Support Baru',
     role: 'itsupport',
@@ -96,7 +96,7 @@ export const seedUsers: User[] = [
   },
   {
     id: 'usr-103',
-    email: 'vendor.pending@itflow.demo',
+    email: 'vendor.pending@fiyro.demo',
     password: 'demo123',
     name: 'Vendor Baru',
     role: 'vendor',
@@ -119,7 +119,7 @@ export const seedUsers: User[] = [
   // ============================================
   {
     id: 'usr-201',
-    email: 'vendor.expired@itflow.demo',
+    email: 'vendor.expired@fiyro.demo',
     password: 'demo123',
     name: 'Vendor Lama',
     role: 'vendor',
@@ -141,7 +141,7 @@ export const seedUsers: User[] = [
   },
   {
     id: 'usr-202',
-    email: 'employee.expired@itflow.demo',
+    email: 'employee.expired@fiyro.demo',
     password: 'demo123',
     name: 'Employee Contract Ended',
     role: 'karyawan',
@@ -154,7 +154,7 @@ export const seedUsers: User[] = [
   // ============================================
   {
     id: 'usr-301',
-    email: 'itsupport.archived@itflow.demo',
+    email: 'itsupport.archived@fiyro.demo',
     password: 'demo123',
     name: 'IT Support Lama',
     role: 'itsupport',
@@ -625,7 +625,7 @@ export const seedJobs: Job[] = [
   {
     id: 'JOB-003',
     title: 'Install Access Point Office',
-    description: 'Instalasi access point WiFi Aruba AP-303 untuk mengganti perangkat lama di area office IT Flow.',
+    description: 'Instalasi access point WiFi Aruba AP-303 untuk mengganti perangkat lama di area office FIYRO.',
     location: 'Gedung B - Ruang Office',
     deadline: '2026-07-16',
     status: 'Completed',
