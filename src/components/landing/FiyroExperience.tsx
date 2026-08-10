@@ -57,7 +57,7 @@ function buildWorkflowChoreography(cfg: WorkflowChoreographyConfig) {
   gsap.set(panels, {
     y: 24,
     scale: cfg.baseScale,
-    z: -cfg.activeZ * 0.8,
+    z: -cfg.activeZ * 0.4,
   })
   gsap.set(labels, { opacity: 0.5 })
   gsap.set(dots, { scale: 0, opacity: 0 })
@@ -117,8 +117,8 @@ function buildWorkflowChoreography(cfg: WorkflowChoreographyConfig) {
       panel,
       {
         y: 0,
-        scale: 1.01,
-        z: cfg.activeZ,
+        scale: 1.005,
+        z: cfg.activeZ * 0.5,
         duration,
       },
       start,
@@ -129,7 +129,7 @@ function buildWorkflowChoreography(cfg: WorkflowChoreographyConfig) {
 
     tl.to(
       panel,
-      { scale: 0.985, z: cfg.settleZ, duration: 0.16 },
+      { scale: 0.995, z: cfg.settleZ * 0.5, duration: 0.16 },
       start + duration,
     )
   })
@@ -229,6 +229,7 @@ export function FiyroExperience() {
 
       mm.add('(max-width: 767.98px)', () => {
         const q = gsap.utils.selector(root)
+        const panels = q('[data-fiyro-panel]')
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: root,
@@ -239,29 +240,36 @@ export function FiyroExperience() {
           defaults: { ease: 'none' },
         })
 
-        // Simple mobile choreography — no scene rotation, no translateZ
-        // Gentle 3D flip: back → front, cascading left → right, scrub-bound.
-        const cardInners = q('[data-fiyro-card-inner]')
-        tl.set(cardInners, { rotationY: 180 }, 0)
-        cardInners.forEach((inner, i) => {
+        // VERTICAL WORKFLOW REVEAL — no rotationY, no translateZ, no scene tilt.
+        // Cards rise sequentially in workflow order, scrubbed to scroll.
+        panels.forEach((panel, i) => {
+          const glow = panel.querySelector('[data-fiyro-panel-glow]')
+          gsap.set(panel, { y: 28, scale: 0.985 })
+          if (glow) gsap.set(glow, { opacity: 0 })
+
+          const start = i * 0.16
           tl.to(
-            inner,
-            { rotationY: 0, duration: 0.2, ease: 'sine.inOut' },
-            0.04 + i * 0.06,
+            panel,
+            { y: 0, scale: 1, duration: 0.45, ease: 'power1.out' },
+            start,
           )
+          if (glow) tl.to(glow, { opacity: 0.45, duration: 0.35 }, start)
         })
+
+        // Vertical rail connects the four cards as the workflow progresses
+        const railFill = q('[data-fiyro-mobile-rail-fill]')
+        if (railFill.length) {
+          gsap.set(railFill, { scaleY: 0, transformOrigin: 'top center' })
+          tl.to(railFill, { scaleY: 1, duration: 0.85 }, 0)
+        }
+
+        // Subtle parallax — unchanged, no 3D movement
         tl.fromTo(
-          q('[data-fiyro-panel]'),
-          { y: 18 },
-          { y: 0, duration: 1 },
+          '[data-fiyro-layer="background"]',
+          { y: 16 },
+          { y: -16, duration: 1 },
           0,
         )
-          .fromTo(
-            '[data-fiyro-layer="background"]',
-            { y: 16 },
-            { y: -16, duration: 1 },
-            0,
-          )
           .fromTo(
             '[data-fiyro-layer="foreground"]',
             { y: -12 },
@@ -364,7 +372,26 @@ export function FiyroExperience() {
           </div>
         </div>
 
-        <div className="mt-16 [perspective:1200px]">
+        <div className="relative mt-16 [perspective:1200px]">
+          {/* MOBILE VERTICAL RAIL — mobile-only, in the left gutter, connects REPORT → ASSIGN → FIX → RESOLVE */}
+          <div
+            data-fiyro-mobile-rail
+            aria-hidden="true"
+            className="absolute -left-[18px] top-0 bottom-0 flex w-[10px] flex-col justify-around md:hidden pointer-events-none"
+          >
+            <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-[var(--color-border-light)]" />
+            <div
+              data-fiyro-mobile-rail-fill
+              className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 origin-top bg-gradient-to-b from-brand-primary to-brand-accent"
+              style={{ transform: 'scaleY(0)' }}
+            />
+            {workflowSteps.map((step) => (
+              <div
+                key={step.number}
+                className="relative h-[7px] w-[7px] rounded-full bg-brand-primary/80 shadow-[0_0_8px_rgba(99,102,241,0.35)]"
+              />
+            ))}
+          </div>
           <div
             data-fiyro-scene
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 [transform-style:preserve-3d]"

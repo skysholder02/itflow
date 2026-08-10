@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion'
-import { Button, Logo } from '@/components/ui'
+import { Button } from '@/components/ui'
 
 const heroWorkflow = [
   { number: '01', title: 'Report' },
@@ -29,15 +29,6 @@ export function Hero() {
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-        {/* FIYRO icon */}
-        <motion.div
-          initial={animate ? { opacity: 0, y: 30 } : false}
-          animate={animate ? { opacity: 1, y: 0 } : undefined}
-          transition={{ delay: 0.02, duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-          className="flex justify-center mb-8"
-        >
-          <Logo variant="icon" width={120} forceLight />
-        </motion.div>
         {/* Large headline */}
         <motion.h1
           initial={animate ? { opacity: 0, y: 30 } : false}
