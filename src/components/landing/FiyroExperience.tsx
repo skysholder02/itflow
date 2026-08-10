@@ -35,7 +35,6 @@ interface WorkflowChoreographyConfig {
   root: HTMLElement
   start: string
   end: string
-  introOpacity: number
   baseScale: number
   activeZ: number
   settleZ: number
@@ -56,7 +55,6 @@ function buildWorkflowChoreography(cfg: WorkflowChoreographyConfig) {
   const labels = q('[data-fiyro-progress-label]')
 
   gsap.set(panels, {
-    opacity: cfg.introOpacity,
     y: 24,
     scale: cfg.baseScale,
     z: -cfg.activeZ * 0.8,
@@ -92,7 +90,6 @@ function buildWorkflowChoreography(cfg: WorkflowChoreographyConfig) {
   tl.to(
     panels,
     {
-      opacity: Math.min(cfg.introOpacity + 0.25, 0.85),
       y: 8,
       scale: cfg.baseScale + 0.015,
       duration: 0.18,
@@ -119,7 +116,6 @@ function buildWorkflowChoreography(cfg: WorkflowChoreographyConfig) {
     tl.to(
       panel,
       {
-        opacity: 1,
         y: 0,
         scale: 1.01,
         z: cfg.activeZ,
@@ -160,7 +156,7 @@ function buildWorkflowChoreography(cfg: WorkflowChoreographyConfig) {
   )
   tl.to(
     panels,
-    { opacity: 1, y: 0, scale: 1, z: cfg.finalZ, duration: 0.3 },
+    { y: 0, scale: 1, z: cfg.finalZ, duration: 0.3 },
     0.7,
   )
 
@@ -198,7 +194,6 @@ export function FiyroExperience() {
           root,
           start: 'top 75%',
           end: 'bottom 25%',
-          introOpacity: 0.55,
           baseScale: 0.965,
           activeZ: 28,
           settleZ: -6,
@@ -218,7 +213,6 @@ export function FiyroExperience() {
           root,
           start: 'top 80%',
           end: 'bottom 20%',
-          introOpacity: 0.6,
           baseScale: 0.975,
           activeZ: 20,
           settleZ: -4,
@@ -258,8 +252,8 @@ export function FiyroExperience() {
         })
         tl.fromTo(
           q('[data-fiyro-panel]'),
-          { opacity: 0.7, y: 18 },
-          { opacity: 1, y: 0, duration: 1 },
+          { y: 18 },
+          { y: 0, duration: 1 },
           0,
         )
           .fromTo(
@@ -379,7 +373,7 @@ export function FiyroExperience() {
               <article
                 key={step.number}
                 data-fiyro-panel
-                className="group relative h-full rounded-2xl bg-bg-tertiary border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300 [transform-style:preserve-3d]"
+                className="group relative h-full [transform-style:preserve-3d]"
               >
                 <div
                   data-fiyro-card-inner
@@ -388,7 +382,7 @@ export function FiyroExperience() {
                   {/* FRONT FACE — the existing workflow card */}
                   <div
                     data-fiyro-card-front
-                    className="relative flex h-full flex-col overflow-hidden rounded-2xl p-7 [backface-visibility:hidden]"
+                    className="relative flex h-full flex-col overflow-hidden rounded-2xl bg-bg-tertiary border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.04)] group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300 p-7 [backface-visibility:hidden]"
                   >
                     <div
                       data-fiyro-panel-glow
@@ -422,7 +416,7 @@ export function FiyroExperience() {
                   {/* BACK FACE — minimal premium flip face (initial state: hidden behind front) */}
                   <div
                     data-fiyro-card-back
-                    className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl bg-bg-tertiary p-7 [transform:rotateY(180deg)] [backface-visibility:hidden]"
+                    className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl bg-bg-tertiary border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-7 [transform:rotateY(180deg)] [backface-visibility:hidden]"
                     aria-hidden="true"
                   >
                     <div
