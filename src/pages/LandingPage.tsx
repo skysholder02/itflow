@@ -1,6 +1,7 @@
 import { Navbar } from '@/components/landing/Navbar'
 import { Hero } from '@/components/landing/Hero'
 import { FiyroExperience } from '@/components/landing/FiyroExperience'
+import { HeroWorkflowTransition } from '@/components/landing/HeroWorkflowTransition'
 import { Features } from '@/components/landing/Features'
 import { Statistics } from '@/components/landing/Statistics'
 import { Testimonials } from '@/components/landing/Testimonials'
@@ -15,7 +16,9 @@ export function LandingPage() {
       <GlowBackground />
       <Navbar />
       <Hero />
-      <FiyroExperience />
+      <HeroWorkflowTransition>
+        <FiyroExperience />
+      </HeroWorkflowTransition>
       <Features />
       <Statistics />
       <Testimonials />
