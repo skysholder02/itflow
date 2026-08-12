@@ -26,6 +26,16 @@ export function Navbar() {
 
   const scrollTo = (href: string) => {
     setMobileOpen(false)
+    // Home = top of the document. The Hero section is `sticky top-0`, so while
+    // it is pinned its bounding rect already sits at the viewport top and
+    // `scrollIntoView` computes "no scroll needed" — leaving `scrollY > 0` and
+    // the scroll-driven Hero stuck in a mid-transition (faded) state. Scrolling
+    // the window to top sets the true source of truth (scrollY = 0) so the Hero
+    // restores exactly to its initial state.
+    if (href === '#home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
     const el = document.querySelector(href)
     el?.scrollIntoView({ behavior: 'smooth' })
   }

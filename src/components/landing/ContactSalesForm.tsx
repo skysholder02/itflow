@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { useForm, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { Input, Select, Textarea } from '@/components/ui'
+import { cn } from '@/utils/cn'
 import {
   buildContactSalesEmailParams,
   contactSalesEmailService,
@@ -95,6 +96,8 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
 
   const values = watch()
 
+  const reducedMotion = useReducedMotion()
+
   type FieldName = keyof FormData
   const feedback = (name: FieldName): { error?: string; success?: string } => {
     const message = errors[name]?.message
@@ -103,6 +106,18 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
     if (message) return { error: message }
     if (filled) return { success: 'Looks good' }
     return {}
+  }
+
+  const fieldClass = (name: FieldName) => {
+    const f = feedback(name)
+    return cn(
+      'cs-field bg-white/[0.06]! text-white! placeholder:text-white/40! [color-scheme:dark]!',
+      f.error
+        ? 'border-red-500/60! focus:border-red-500/60!'
+        : f.success
+          ? 'border-emerald-500/60! focus:border-emerald-500/60!'
+          : 'border-white/15! focus:border-[#8b5cf6]/80!',
+    )
   }
 
   const normalizePasteValue = (name: FieldName, value: string): string => {
@@ -182,9 +197,9 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
+      exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       className="mt-6"
     >
@@ -221,6 +236,7 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
             placeholder="Your full name"
             error={feedback('fullName').error}
             success={feedback('fullName').success}
+            className={fieldClass('fullName')}
             {...register('fullName')}
           />
           <Input
@@ -228,6 +244,7 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
             placeholder="e.g. PT Solusi Utama"
             error={feedback('companyName').error}
             success={feedback('companyName').success}
+            className={fieldClass('companyName')}
             onPaste={handlePaste('companyName')}
             {...register('companyName')}
           />
@@ -239,6 +256,7 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
             placeholder="name@company.com"
             error={feedback('businessEmail').error}
             success={feedback('businessEmail').success}
+            className={fieldClass('businessEmail')}
             onPaste={handlePaste('businessEmail')}
             {...register('businessEmail')}
           />
@@ -248,6 +266,7 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
             placeholder="e.g. 081234567890"
             error={feedback('phoneNumber').error}
             success={feedback('phoneNumber').success}
+            className={fieldClass('phoneNumber')}
             onPaste={handlePaste('phoneNumber')}
             {...register('phoneNumber')}
           />
@@ -257,6 +276,7 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
           options={subjectOptions}
           error={feedback('subject').error}
           success={feedback('subject').success}
+          className={fieldClass('subject')}
           {...register('subject')}
         />
         <Textarea
@@ -264,6 +284,7 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
           placeholder="Tell us about your IT needs..."
           error={feedback('message').error}
           success={feedback('message').success}
+          className={fieldClass('message')}
           counter={typeof values.message === 'string' ? values.message.replace(/\r\n/g, '\n').length : 0}
           maxCount={1000}
           {...register('message')}
@@ -278,14 +299,14 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
               Ready to send
             </p>
           ) : (
-            <p className="text-center text-xs text-text-muted">Complete the form to continue.</p>
+            <p className="text-center text-xs cs-text-muted">Complete the form to continue.</p>
           )}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-3">
             <button
               type="submit"
               disabled={sending || !formIsValid}
               title={formIsValid ? undefined : 'Complete the form to continue'}
-              className="w-full min-w-[170px] flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-brand-primary text-white text-sm font-medium hover:bg-[#1a8aff] hover:shadow-[0_8px_30px_rgba(0,122,255,0.35)] hover:-translate-y-0.5 transition-all disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
+              className="w-full min-w-[170px] flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] text-white text-sm font-medium cs-glow-indigo hover:shadow-[0_12px_44px_rgba(99,102,241,0.5),0_0_24px_rgba(139,92,246,0.35)] hover:-translate-y-0.5 active:scale-[0.97] transition-all disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a855f7]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b0b12]"
             >
               <span className="inline-flex justify-center items-center w-[18px] h-[18px] shrink-0">
                 {sendStatus === 'sending' ? (
@@ -309,9 +330,9 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
               type="button"
               disabled={sending}
               onClick={() => handleSubmit(onWhatsAppSubmit, focusFirstInvalid)()}
-              className="group w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/5 text-text-primary border border-white/10 text-sm font-medium hover:bg-green-500/5 hover:border-green-500/20 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 cursor-pointer"
+              className="group w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/[0.06] text-white border border-white/15 text-sm font-medium hover:bg-green-500/10 hover:border-green-500/30 hover:-translate-y-0.5 active:scale-[0.97] transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a855f7]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b0b12]"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 group-hover:text-green-600 transition-colors">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 group-hover:text-green-400 transition-colors">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
               </svg>
               Continue to WhatsApp
@@ -320,7 +341,7 @@ export function ContactSalesForm({ onBack, onClose }: ContactSalesFormProps) {
           <button
             type="button"
             onClick={onBack}
-            className="w-full py-3 text-sm text-text-muted hover:text-text-primary hover:scale-[1.01] transition-all cursor-pointer"
+            className="w-full py-3 text-sm cs-text-muted hover:text-white hover:scale-[1.01] transition-all cursor-pointer"
           >
             Back
           </button>

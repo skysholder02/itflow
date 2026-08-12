@@ -53,29 +53,22 @@ export function Hero() {
 
   const { scrollY } = useScroll()
 
-  // HERO WINDOW REVEAL — the Hero is a cover/window pinned at the top of the
-  // viewport. Its contents stay composed as one surface; instead the bottom of
-  // the cover is progressively clipped away by scroll, exposing the workflow
-  // that sits behind it in the document. The reveal spans ~one viewport.
-  const clipPath = useTransform(scrollY, (value) => {
+  // SCROLL-CONTROLLED HERO TRANSFORMATION — the Hero stays pinned inside its
+  // sticky frame (it never translates); only its visual state changes with
+  // scroll progress. Scroll 0 → normal panel; scroll 100% → fully transformed
+  // and faded out, revealing the workflow behind it. Progress spans ~1 viewport.
+  const progress = useTransform(scrollY, (value) => {
     const viewport = window.innerHeight || 1
-    const p = Math.max(0, Math.min(value / viewport, 1))
-    return `inset(0 0 ${p * 100}% 0)`
+    return Math.max(0, Math.min(value / viewport, 1))
   })
 
-  // The moving bottom edge of the cover tracks the clip boundary.
-  const edgeBottom = useTransform(scrollY, (value) => {
-    const viewport = window.innerHeight || 1
-    const p = Math.max(0, Math.min(value / viewport, 1))
-    return `${p * 100}%`
-  })
-
-  // Edge fades in only once the cover actually starts lifting.
-  const edgeOpacity = useTransform(scrollY, (value) => {
-    const viewport = window.innerHeight || 1
-    const t = value / viewport
-    return t < 0.05 ? 0 : Math.min((t - 0.05) / 0.25, 1)
-  })
+  // Visual properties driven by progress: subtle zoom, late fade (starts ~65%),
+  // gentle corner rounding. All applied to the single hero surface.
+  const scale = useTransform(progress, (p) => 1 + p * 0.1)
+  const heroOpacity = useTransform(progress, (p) =>
+    1 - Math.max(0, Math.min((p - 0.65) / 0.35, 1)),
+  )
+  const borderRadius = useTransform(progress, (p) => p * 20)
 
   const scrollToFeatures = () => {
     document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })
@@ -95,8 +88,8 @@ export function Hero() {
       )}
     >
       <motion.div
-        style={animate ? { clipPath } : undefined}
-        className="relative h-full bg-bg-primary"
+        style={animate ? { scale, opacity: heroOpacity, borderRadius } : undefined}
+        className="relative h-full bg-bg-primary transform-gpu"
       >
         {/* ============ BACKGROUND LAYER ============ */}
         <div className="absolute inset-0 pointer-events-none select-none" aria-hidden="true">
@@ -311,19 +304,6 @@ export function Hero() {
           </FloatingCard>
         </div>
       </motion.div>
-
-      {/* Moving bottom edge of the cover — a sibling of the clipped surface so
-          it is never clipped itself; it travels with the reveal boundary. */}
-      {animate && (
-        <motion.div
-          style={{ bottom: edgeBottom, opacity: edgeOpacity }}
-          className="pointer-events-none absolute inset-x-0 z-30"
-          aria-hidden="true"
-        >
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-black/[0.08] to-transparent" />
-          <div className="h-10 w-full bg-gradient-to-b from-black/[0.06] to-transparent" />
-        </motion.div>
-      )}
     </section>
   )
 }
