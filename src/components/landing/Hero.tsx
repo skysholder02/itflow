@@ -190,7 +190,7 @@ export function Hero() {
         <div className="pointer-events-none absolute inset-0 z-20" aria-hidden="true">
           {/* Card A — live ticket */}
           <FloatingCard
-            className="absolute bottom-4 right-4 w-44 md:bottom-[12%] md:right-[6%] md:top-auto md:w-[230px] lg:bottom-auto lg:right-[6%] lg:top-[16%] lg:w-[258px] xl:right-[7%] xl:w-[278px]"
+            className="absolute bottom-4 right-4 hidden w-44 lg:block md:bottom-[12%] md:right-[6%] md:top-auto md:w-[230px] lg:bottom-auto lg:right-[6%] lg:top-[16%] lg:w-[258px] xl:right-[7%] xl:w-[278px]"
             entranceDelay={0.7}
             floatY={-8}
             duration={6}

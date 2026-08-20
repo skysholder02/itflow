@@ -7,7 +7,7 @@ import { DesktopTransition } from './DesktopTransition'
 import { MobileTransition } from './MobileTransition'
 
 export function LoginTransition() {
-  // ✅ Tambahin finishManualLogin di sini
+  // Tambahin finishManualLogin di sini
   const {
     isActive,
     endTransition,

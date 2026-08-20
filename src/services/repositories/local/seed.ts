@@ -16,6 +16,57 @@ const REMOVED_DEMO_VENDOR_EMAILS = new Set([
   'vendor_expired@fiyro.demo',
 ])
 
+const CURRENT_DEMO_EMAILS = new Set([
+  'employee@fiyro.demo',
+  'support@fiyro.demo',
+  'leader@fiyro.demo',
+  'vendor@fiyro.demo',
+])
+
+const LEGACY_DEMO_EMAIL_MAP: Record<string, string> = {
+  'employee@itflow.demo': 'employee@fiyro.demo',
+  'support@itflow.demo': 'support@fiyro.demo',
+  'leader@itflow.demo': 'leader@fiyro.demo',
+  'vendor@itflow.demo': 'vendor@fiyro.demo',
+}
+
+// Rename only the known legacy demo seed accounts to their current identities.
+// Never touches arbitrary registered users. Idempotent: legacy emails are
+// consumed on the first run, so later runs produce no further changes.
+function migrateLegacyDemoEmails(users: User[]): User[] {
+  const currentEmails = new Set(users.map((u) => u.email.toLowerCase()))
+  const migrated: User[] = []
+  const seen = new Set<string>()
+
+  for (const user of users) {
+    const currentEmail = LEGACY_DEMO_EMAIL_MAP[user.email.toLowerCase()]
+    if (currentEmail) {
+      const target = currentEmail.toLowerCase()
+      // Drop the legacy duplicate if the current account already exists.
+      if (currentEmails.has(target) || seen.has(target)) continue
+      migrated.push({ ...user, email: currentEmail })
+      seen.add(target)
+      continue
+    }
+    migrated.push(user)
+  }
+
+  return migrated
+}
+
+// Add any missing current demo seed accounts to an already-seeded database.
+// Additive and idempotent: only appends demo users that are absent.
+function ensureCurrentDemoAccounts(users: User[]): User[] {
+  const existingEmails = new Set(users.map((u) => u.email.toLowerCase()))
+  const missingDemoUsers = seedUsers.filter(
+    (u) =>
+      CURRENT_DEMO_EMAILS.has(u.email.toLowerCase()) &&
+      !existingEmails.has(u.email.toLowerCase()),
+  )
+  if (missingDemoUsers.length === 0) return users
+  return [...users, ...missingDemoUsers]
+}
+
 const ROLE_MAP: Record<string, string> = {
   employee: 'karyawan',
   it_support: 'itsupport',
@@ -39,17 +90,19 @@ export function normalizeName(name: string): string {
 }
 
 function migrateUsers(users: User[]): User[] {
-  return users
-    .filter((u) => !REMOVED_DEMO_VENDOR_EMAILS.has(u.email))
-    .map((u) => ({
-      ...u,
-      role: normalizeRole(u.role),
-      name: normalizeName(u.name),
-      vendorStatus:
-        u.role === 'vendor' && u.vendorStatus
-          ? normalizeVendorStatus(u.vendorStatus)
-          : u.vendorStatus,
-    }))
+  return migrateLegacyDemoEmails(
+    users
+      .filter((u) => !REMOVED_DEMO_VENDOR_EMAILS.has(u.email))
+      .map((u) => ({
+        ...u,
+        role: normalizeRole(u.role),
+        name: normalizeName(u.name),
+        vendorStatus:
+          u.role === 'vendor' && u.vendorStatus
+            ? normalizeVendorStatus(u.vendorStatus)
+            : u.vendorStatus,
+      })),
+  )
 }
 
 function migrateTickets(tickets: Ticket[]): Ticket[] {
@@ -116,14 +169,15 @@ export function seedDatabase(): void {
     setItem(STORAGE_KEYS.JOBS, seedJobs)
   }
 
-  // Ensure the single demo vendor account exists if missing
-  const users = getItem<User[]>(STORAGE_KEYS.USERS) ?? []
-  const demoVendor = seedUsers.find((u) => u.email === 'vendor@fiyro.demo')
-  if (seeded && demoVendor && !users.some((u) => u.email === demoVendor.email)) {
-    setItem(STORAGE_KEYS.USERS, [...users, demoVendor])
+  if (seeded) {
+    // Repair old databases: ensure all four current demo accounts exist.
+    const users = getItem<User[]>(STORAGE_KEYS.USERS) ?? []
+    const updatedUsers = ensureCurrentDemoAccounts(users)
+    if (updatedUsers.length > users.length) {
+      setItem(STORAGE_KEYS.USERS, updatedUsers)
+    }
+    return
   }
-
-  if (seeded) return
 
   setItem(STORAGE_KEYS.USERS, seedUsers)
   setItem(STORAGE_KEYS.TICKETS, seedTickets)

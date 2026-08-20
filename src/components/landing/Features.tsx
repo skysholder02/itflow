@@ -1,16 +1,11 @@
 import { motion, useReducedMotion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { cn } from '@/utils/cn'
 
 const features = [
   {
     title: 'Ticket Management',
     description: 'Create, track, and resolve IT tickets with priority-based workflows and real-time status updates.',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
-        <rect x="9" y="3" width="6" height="4" rx="1" />
-        <path d="M9 14l2 2 4-4" />
-      </svg>
-    ),
   },
   {
     title: 'Asset Management',
@@ -62,6 +57,14 @@ const features = [
     ),
   },
 ]
+
+const SLIDE_IMAGES = [
+  { src: '/images/auth/slide-1.png', alt: 'ITFlow Dashboard preview' },
+  { src: '/images/auth/slide-2.png', alt: 'ITFlow Ticket Management preview' },
+  { src: '/images/auth/slide-3.png', alt: 'ITFlow QR Asset System preview' },
+]
+
+const SLIDE_INTERVAL_MS = 5000
 
 export function Features() {
   const reducedMotion = useReducedMotion()
@@ -130,32 +133,28 @@ export function Features() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
           >
-            <div className="group relative overflow-hidden h-full p-8 md:p-10 rounded-2xl bg-bg-secondary border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-300">
+            <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl bg-bg-secondary/70 backdrop-blur-sm border border-[var(--color-border-light)] shadow-[0_2px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-300 ease-out">
               <div
-                className="absolute inset-0 pointer-events-none"
                 aria-hidden="true"
+                className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    'radial-gradient(ellipse at 15% 20%, rgba(99, 102, 241, 0.08), transparent 55%)',
+                    'radial-gradient(ellipse at 15% 20%, rgba(99, 102, 241, 0.07), transparent 55%)',
                 }}
               />
-              <div className="relative flex flex-col sm:flex-row sm:items-center gap-6">
-                <div className="shrink-0 w-14 h-14 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center [&>svg]:w-7 [&>svg]:h-7 group-hover:bg-brand-primary/15 transition-colors">
-                  {featured.icon}
-                </div>
-                <div>
-                  <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-text-primary">
-                    {featured.title}
-                  </h3>
-                  <div
-                    aria-hidden="true"
-                    className="mt-3 h-px w-10 bg-gradient-to-r from-brand-primary to-transparent"
-                  />
-                  <p className="mt-4 text-sm md:text-base text-text-secondary leading-relaxed max-w-lg">
-                    {featured.description}
-                  </p>
-                </div>
+              <div className="relative flex flex-col px-6 sm:px-10 md:px-14 pt-10 md:pt-14 pb-6 md:pb-8">
+                <h3 className="text-4xl md:text-5xl font-bold tracking-tight text-text-primary">
+                  {featured.title}
+                </h3>
+                <div
+                  aria-hidden="true"
+                  className="mt-6 h-px w-12 bg-brand-primary/40"
+                />
+                <p className="mt-6 text-base text-text-secondary leading-relaxed max-w-lg">
+                  {featured.description}
+                </p>
               </div>
+              <FeaturedCarousel />
             </div>
           </motion.div>
 
@@ -198,5 +197,64 @@ export function Features() {
         </div>
       </div>
     </section>
+  )
+}
+
+function FeaturedCarousel() {
+  const [activeSlide, setActiveSlide] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % SLIDE_IMAGES.length)
+    }, SLIDE_INTERVAL_MS)
+    return () => clearInterval(timer)
+  }, [])
+
+  return (
+    <>
+      <div className="relative mt-8 md:mt-10 mx-6 sm:mx-10 md:mx-14 mb-8 md:mb-10 overflow-hidden rounded-2xl border border-[var(--color-border-light)] bg-[#fafafa] shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_40px_rgba(0,0,0,0.07)]">
+        <div className="relative flex items-center gap-1.5 border-b border-[var(--color-border-light)] px-4 py-2.5">
+          <span className="h-2 w-2 rounded-full bg-[#ff5f57]" />
+          <span className="h-2 w-2 rounded-full bg-[#febc2e]" />
+          <span className="h-2 w-2 rounded-full bg-[#28c840]" />
+          <span className="pointer-events-none absolute inset-x-0 text-center text-[10px] font-medium tracking-wide text-slate-400">
+            fiyro.app/tickets
+          </span>
+        </div>
+        <div className="relative aspect-video overflow-hidden bg-[#f0f2f8] transition-transform duration-300 ease-out group-hover:scale-[1.02]">
+          {SLIDE_IMAGES.map((image, index) => (
+            <motion.img
+              key={image.src}
+              src={image.src}
+              alt={image.alt}
+              draggable={false}
+              initial={false}
+              aria-hidden={index !== activeSlide}
+              className="absolute inset-0 h-full w-full object-contain"
+              animate={{ opacity: index === activeSlide ? 1 : 0 }}
+              transition={{ duration: 0.6, ease: 'easeInOut' }}
+              loading="lazy"
+            />
+          ))}
+        </div>
+      </div>
+      <div className="mx-6 sm:mx-10 md:mx-14 mb-10 md:mb-14 mt-4 flex items-center justify-center gap-2.5">
+        {SLIDE_IMAGES.map((image, index) => (
+          <button
+            key={image.src}
+            type="button"
+            aria-label={`Show ${image.alt}`}
+            aria-current={index === activeSlide}
+            onClick={() => setActiveSlide(index)}
+            className={cn(
+              'h-2 rounded-full transition-all duration-300',
+              index === activeSlide
+                ? 'w-6 bg-text-secondary'
+                : 'w-2 bg-text-muted/50 hover:bg-text-muted',
+            )}
+          />
+        ))}
+      </div>
+    </>
   )
 }

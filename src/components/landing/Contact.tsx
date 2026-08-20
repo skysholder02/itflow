@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Button } from '@/components/ui'
@@ -18,139 +17,115 @@ const embers = [
 export function Contact() {
   const {
     sectionRef,
-    isActive,
-    isInView,
     highlightActive,
     showModal,
     onModalClose,
     openModal,
-    trigger,
   } = useCtaSequence('scroll-to-contact')
 
   const reducedMotion = useReducedMotion()
   const animate = !reducedMotion
 
-  const surfaceRef = useRef<HTMLDivElement>(null)
-  const [shimmerDone, setShimmerDone] = useState(false)
-
-  useEffect(() => {
-    const el = surfaceRef.current
-    if (!el) return
-    const stopShimmer = (e: AnimationEvent) => {
-      if (e.animationName === 'cs-shimmer-sweep') setShimmerDone(true)
-    }
-    el.addEventListener('animationiteration', stopShimmer)
-    return () => el.removeEventListener('animationiteration', stopShimmer)
-  }, [])
-
   return (
-    <section ref={sectionRef} id="contact" className="relative py-28 overflow-hidden">
-      {/* Ambient glow behind the surface */}
+    <section
+      ref={sectionRef}
+      className="relative min-h-svh h-svh w-full overflow-hidden bg-[#09090b]"
+    >
+      {/* Cinematic background — masked grid, ambient purple/indigo glow, vignette.
+          The glow layer breathes slowly (opacity only — no vertical movement). */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <div className="cs-orb cs-orb-soft left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[560px] w-[760px]" />
+        <div className="absolute inset-0">
+          <div className="cs-grid" />
+        </div>
+        <motion.div
+          animate={animate ? { opacity: [0.7, 1, 0.7] } : undefined}
+          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute inset-0"
+        >
+          <div className="cs-orb cs-orb-indigo -top-32 -left-32 h-[520px] w-[520px]" />
+          <div className="cs-orb cs-orb-violet -bottom-40 -right-32 h-[560px] w-[560px]" />
+          <div className="cs-orb cs-orb-soft left-1/2 top-1/2 h-[720px] w-[900px] -translate-x-1/2 -translate-y-1/2" />
+        </motion.div>
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.6) 100%)',
+          }}
+        />
       </div>
 
-      <div className="relative max-w-5xl mx-auto px-6 text-center">
-        <motion.div
-          key={isActive ? trigger : undefined}
-          initial={
-            !animate
-              ? false
-              : isActive
-                ? { opacity: 0, y: 20, scale: 0.98 }
-                : { opacity: 0, y: 24 }
-          }
-          animate={
-            !animate
-              ? undefined
-              : isInView
-                ? { opacity: 1, y: 0, scale: isActive ? 1 : undefined }
-                : {}
-          }
-          transition={
-            isActive
-              ? { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
-              : { duration: 0.6, ease: [0.25, 1, 0.5, 1] }
-          }
-        >
-          {/* Cinematic dark glass surface */}
-          <div
-            ref={surfaceRef}
-            className={cn(
-              'cs-surface cs-hairline rounded-[32px] px-6 py-16 md:py-20',
-              !shimmerDone && 'cs-shimmer',
-            )}
-          >
-            {/* Grid + ambient orbs */}
-            <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-              <div className="cs-grid" />
-              <div className="cs-orb cs-orb-indigo -top-28 -left-28 h-96 w-96" />
-              <div className="cs-orb cs-orb-violet -bottom-36 -right-24 h-[420px] w-[420px]" />
-              <div className="cs-orb cs-orb-soft left-1/2 top-1/2 h-[620px] w-[620px] -translate-x-1/2 -translate-y-1/2" />
-            </div>
+      {/* Embers */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        {embers.map((e, i) => (
+          <span
+            key={i}
+            className={cn('cs-ember', e.tone)}
+            style={
+              {
+                left: e.left,
+                bottom: e.bottom,
+                '--cs-ember-duration': e.duration,
+                '--cs-ember-delay': e.delay,
+                '--cs-ember-x': e.drift,
+              } as CSSProperties
+            }
+          />
+        ))}
+      </div>
 
-            {/* Embers */}
-            <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-              {embers.map((e, i) => (
-                <span
-                  key={i}
-                  className={cn('cs-ember', e.tone)}
-                  style={
-                    {
-                      left: e.left,
-                      bottom: e.bottom,
-                      '--cs-ember-duration': e.duration,
-                      '--cs-ember-delay': e.delay,
-                      '--cs-ember-x': e.drift,
-                    } as CSSProperties
-                  }
+      {/* Centered content — one locked, fully-composed composition. Nothing here
+          moves on scroll: the white curtain in front of the scene is the only
+          moving layer, so the badge, heading, description and CTA are revealed
+          already in their final position. */}
+      <div className="relative z-10 flex h-full w-full items-center justify-center px-6">
+        <div className="w-full max-w-3xl text-center">
+          <p className="cs-pill">
+            <span className="relative flex h-2 w-2">
+              {animate && (
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#a855f7] opacity-75" />
+              )}
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#a855f7]" />
+            </span>
+            Ready When You Are
+          </p>
+
+          <h2 className="mt-6 text-4xl md:text-5xl font-bold tracking-tight leading-tight cs-text-primary cs-heading-shine">
+            Ready to Fix Your <span className="cs-text-gradient">IT Problems?</span>
+          </h2>
+
+          <p className="mt-6 mx-auto max-w-xl text-lg leading-relaxed cs-text-secondary">
+            Tell us about your company&rsquo;s IT needs and we&rsquo;ll help
+            you choose the right solution for your workflow.
+          </p>
+
+          <div className="mt-10 flex justify-center">
+            <div className="relative inline-flex group">
+              <div
+                className="cs-beam opacity-70 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+                aria-hidden="true"
+              />
+              {animate && highlightActive && (
+                <motion.div
+                  animate={{
+                    opacity: [0, 0.25, 0.2, 0],
+                    scale: [1, 1.08, 1.15, 1.22],
+                  }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute -inset-6 rounded-[32px] pointer-events-none"
+                  style={{
+                    background:
+                      'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.30) 0%, transparent 70%)',
+                    filter: 'blur(18px)',
+                  }}
                 />
-              ))}
-            </div>
-
-            <div className="relative">
-              <p className="cs-pill">
-                <span className="relative flex h-2 w-2">
-                  {animate && (
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#a855f7] opacity-75" />
-                  )}
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#a855f7]" />
-                </span>
-                Ready When You Are
-              </p>
-              <h2 className="mt-6 text-4xl md:text-5xl font-bold tracking-tight leading-tight cs-text-primary">
-                Ready to Fix Your <span className="cs-text-gradient">IT Problems?</span>
-              </h2>
-              <p className="mt-6 mx-auto max-w-xl text-lg leading-relaxed cs-text-secondary">
-                Tell us about your company&rsquo;s IT needs and we&rsquo;ll help
-                you choose the right solution for your workflow.
-              </p>
-              <div className="mt-10 flex justify-center">
-                <div className="relative inline-flex">
-                  <div className="cs-beam" aria-hidden="true" />
-                  {animate && highlightActive && (
-                    <motion.div
-                      animate={{
-                        opacity: [0, 0.25, 0.2, 0],
-                        scale: [1, 1.08, 1.15, 1.22],
-                      }}
-                      transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                      className="absolute -inset-6 rounded-[32px] pointer-events-none"
-                      style={{
-                        background:
-                          'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.30) 0%, transparent 70%)',
-                        filter: 'blur(18px)',
-                      }}
-                    />
-                  )}
-                  <Button size="lg" variant="premium" onClick={openModal}>
-                    Contact Sales
-                  </Button>
-                </div>
-              </div>
+              )}
+              <Button size="lg" variant="premium" onClick={openModal}>
+                Contact Sales
+              </Button>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       <BusinessContactModal isOpen={showModal} onClose={onModalClose} />

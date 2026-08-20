@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ContactSalesForm } from './ContactSalesForm'
 
@@ -21,7 +22,7 @@ export function BusinessContactModal({ isOpen, onClose }: BusinessContactModalPr
 
   const reducedMotion = useReducedMotion()
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -122,6 +123,7 @@ export function BusinessContactModal({ isOpen, onClose }: BusinessContactModalPr
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

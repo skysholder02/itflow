@@ -7,6 +7,7 @@ import { cn } from '@/utils/cn'
 const navLinks = [
   { label: 'Home', href: '#home' },
   { label: 'Features', href: '#features' },
+  { label: 'Company', href: '#behind-the-operation' },
   { label: 'Statistics', href: '#statistics' },
   { label: 'Contact', href: '#contact' },
 ]
@@ -59,7 +60,10 @@ export function Navbar() {
             <button
               key={link.href}
               onClick={() => scrollTo(link.href)}
-              className="text-sm text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+              className={cn(
+                'text-sm text-text-secondary hover:text-text-primary cursor-pointer',
+                link.href === '#behind-the-operation' ? 'transition-[color,opacity] hover:opacity-90' : 'transition-colors',
+              )}
             >
               {link.label}
             </button>
@@ -103,7 +107,10 @@ export function Navbar() {
             <button
               key={link.href}
               onClick={() => scrollTo(link.href)}
-              className="block w-full text-left text-text-secondary hover:text-text-primary py-2 cursor-pointer"
+              className={cn(
+                'block w-full text-left text-text-secondary hover:text-text-primary py-2 cursor-pointer',
+                link.href === '#behind-the-operation' ? 'transition-[color,opacity] hover:opacity-90' : 'transition-colors',
+              )}
             >
               {link.label}
             </button>
