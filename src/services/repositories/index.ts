@@ -16,15 +16,58 @@ import {
   firebaseContactRepo,
   firebaseJobRepo,
 } from './firebase'
+import {
+  supabaseUserRepo,
+  supabaseTicketRepo,
+  supabaseAssetRepo,
+  supabaseAssetHistoryRepo,
+  supabaseNotificationRepo,
+  supabaseSessionRepo,
+  supabaseContactRepo,
+  supabaseJobRepo,
+} from './supabase'
 
 const provider = import.meta.env.VITE_DATA_PROVIDER ?? 'local'
 const useFirebase = provider === 'firebase'
+const useSupabase = provider === 'supabase'
 
-export const userRepo = useFirebase ? firebaseUserRepo : localUserRepo
-export const ticketRepo = useFirebase ? firebaseTicketRepo : localTicketRepo
-export const assetRepo = useFirebase ? firebaseAssetRepo : localAssetRepo
-export const assetHistoryRepo = useFirebase ? firebaseAssetHistoryRepo : localAssetHistoryRepo
-export const notificationRepo = useFirebase ? firebaseNotificationRepo : localNotificationRepo
-export const sessionRepo = useFirebase ? firebaseSessionRepo : localSessionRepo
-export const contactRepo = useFirebase ? firebaseContactRepo : localContactRepo
-export const jobRepo = useFirebase ? firebaseJobRepo : localJobRepo
+export const userRepo = useSupabase
+  ? supabaseUserRepo
+  : useFirebase
+    ? firebaseUserRepo
+    : localUserRepo
+export const ticketRepo = useSupabase
+  ? supabaseTicketRepo
+  : useFirebase
+    ? firebaseTicketRepo
+    : localTicketRepo
+export const assetRepo = useSupabase
+  ? supabaseAssetRepo
+  : useFirebase
+    ? firebaseAssetRepo
+    : localAssetRepo
+export const assetHistoryRepo = useSupabase
+  ? supabaseAssetHistoryRepo
+  : useFirebase
+    ? firebaseAssetHistoryRepo
+    : localAssetHistoryRepo
+export const notificationRepo = useSupabase
+  ? supabaseNotificationRepo
+  : useFirebase
+    ? firebaseNotificationRepo
+    : localNotificationRepo
+export const sessionRepo = useSupabase
+  ? supabaseSessionRepo
+  : useFirebase
+    ? firebaseSessionRepo
+    : localSessionRepo
+export const contactRepo = useSupabase
+  ? supabaseContactRepo
+  : useFirebase
+    ? firebaseContactRepo
+    : localContactRepo
+export const jobRepo = useSupabase
+  ? supabaseJobRepo
+  : useFirebase
+    ? firebaseJobRepo
+    : localJobRepo
