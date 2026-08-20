@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, EmptyState, Skeleton } from '@/components/ui'
+import { Card, EmptyState, Skeleton, DocumentationImage, ImageViewer } from '@/components/ui'
 import { useAuth } from '@/contexts/AuthContext'
 import { jobService } from '@/services/jobService'
 import type { JobDocumentation } from '@/types'
@@ -15,6 +15,7 @@ export function DocumentationPage() {
   const { user } = useAuth()
   const [docs, setDocs] = useState<ConsolidatedDocumentation[]>([])
   const [loading, setLoading] = useState(true)
+  const [viewerImage, setViewerImage] = useState<{ src: string; alt: string } | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -68,10 +69,12 @@ export function DocumentationPage() {
             <div key={doc.id} className="glass-card overflow-hidden group border border-white/5 flex flex-col justify-between">
               <div>
                 <div className="relative aspect-video w-full overflow-hidden bg-bg-tertiary">
-                  <img
+                  <DocumentationImage
                     src={doc.photoUrl}
-                    alt={doc.type}
+                    alt={`${doc.type} documentation photo`}
                     className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                    onView={(url) => setViewerImage({ src: url, alt: `${doc.type} documentation photo` })}
+                    showZoomIcon
                   />
                   <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-black/60 backdrop-blur-md text-brand-accent uppercase">
                     {doc.type}
@@ -92,6 +95,13 @@ export function DocumentationPage() {
           ))}
         </div>
       )}
+
+      <ImageViewer
+        open={!!viewerImage}
+        onClose={() => setViewerImage(null)}
+        src={viewerImage?.src ?? ''}
+        alt={viewerImage?.alt ?? ''}
+      />
     </div>
   )
 }

@@ -10,3 +10,7 @@ export function isSupabaseConfigured(): boolean {
 export const supabase: SupabaseClient | null = isSupabaseConfigured()
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null
+
+  if (import.meta.env.DEV) {
+  ;(window as any).__FIYRO_SUPABASE__ = supabase
+}

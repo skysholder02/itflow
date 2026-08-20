@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Card, Badge, Button, Input, Textarea, Select, Skeleton } from '@/components/ui'
+import { Card, Badge, Button, Input, Textarea, Select, Skeleton, DocumentationImage, ImageViewer } from '@/components/ui'
 import { useAuth } from '@/contexts/AuthContext'
 import { jobService } from '@/services/jobService'
+import { uploadJobDocumentation, removeJobDocumentation } from '@/services/supabase/storage'
 import type { Job } from '@/types'
 import { formatDate, formatDateTime } from '@/utils/formatters'
 
@@ -22,7 +23,11 @@ export function JobDetailPage() {
   
   // Forms state
   const [materialForm, setMaterialForm] = useState({ name: '', qty: 1, unit: 'pcs', notes: '' })
-  const [docForm, setDocForm] = useState({ type: 'Progress' as 'Before' | 'Progress' | 'After', url: '' })
+  const [docForm, setDocForm] = useState<{ type: 'Before' | 'Progress' | 'After' }>({ type: 'Progress' })
+  const [docFile, setDocFile] = useState<File | null>(null)
+  const [docPreview, setDocPreview] = useState<string | null>(null)
+  const [docUploading, setDocUploading] = useState(false)
+  const [docError, setDocError] = useState('')
   const [extensionForm, setExtensionForm] = useState({ reason: '', days: 3 })
   
   // Rating state
@@ -34,10 +39,20 @@ export function JobDetailPage() {
   const [rejectReason, setRejectReason] = useState('')
   const [rejectWhatsapp, setRejectWhatsapp] = useState('')
 
+  // Documentation image viewer
+  const [viewerImage, setViewerImage] = useState<{ src: string; alt: string } | null>(null)
+
   useEffect(() => {
     if (!id) return
     loadJob()
   }, [id])
+
+  // Revoke the temporary object URL whenever the preview changes or unmounts.
+  useEffect(() => {
+    return () => {
+      if (docPreview) URL.revokeObjectURL(docPreview)
+    }
+  }, [docPreview])
 
   const loadJob = async () => {
     if (!id) return
@@ -132,21 +147,72 @@ export function JobDetailPage() {
     }
   }
 
+  const MAX_DOC_IMAGE_SIZE = 5 * 1024 * 1024 // 5 MB
+
+  const handleDocFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null
+    setDocFile(file)
+    setDocError('')
+    setDocPreview(file ? URL.createObjectURL(file) : null)
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setDocError('Please select an image file.')
+      return
+    }
+    if (file.size > MAX_DOC_IMAGE_SIZE) {
+      setDocError('Image is too large. Maximum size is 5 MB.')
+    }
+  }
+
+  const closeDocModal = () => {
+    setDocPreview(null)
+    setDocFile(null)
+    setDocError('')
+    setDocModal(false)
+  }
+
   const handleUploadDoc = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Use selected default mockup photo if none provided to make testing easier
-    const photoUrl = docForm.url.trim() || 'https://images.unsplash.com/photo-1581092334272-87c6131f6874?auto=format&fit=crop&w=400&q=80'
+    setDocError('')
+
+    if (!docFile) {
+      setDocError('Please select an image to upload.')
+      return
+    }
+    if (!docFile.type.startsWith('image/')) {
+      setDocError('Please select an image file.')
+      return
+    }
+    if (docFile.size > MAX_DOC_IMAGE_SIZE) {
+      setDocError('Image is too large. Maximum size is 5 MB.')
+      return
+    }
+    if (!user) return
+
+    setDocUploading(true)
+    let storagePath = ''
     try {
+      // 1. Upload the image to the private storage bucket.
+      storagePath = await uploadJobDocumentation(job.id, docFile)
+      // 2. Store the storage reference on the job documentation entry.
       const updated = await jobService.uploadDocumentation(job.id, {
         type: docForm.type,
-        photoUrl,
+        photoUrl: storagePath,
         uploadedBy: user.name,
       })
       setJob(updated)
-      setDocModal(false)
-      setDocForm({ type: 'Progress', url: '' })
+      closeDocModal()
     } catch (err) {
       console.error(err)
+      const message = err instanceof Error ? err.message : 'Upload failed. Please try again.'
+      setDocError(message)
+      // If the image was stored but the database update failed, remove the
+      // orphaned file so no unreferenced object is left behind.
+      if (storagePath) {
+        await removeJobDocumentation(storagePath)
+      }
+    } finally {
+      setDocUploading(false)
     }
   }
 
@@ -392,10 +458,12 @@ export function JobDetailPage() {
                 {job.documentation.map((doc) => (
                   <div key={doc.id} className="glass-card overflow-hidden group border border-white/5">
                     <div className="relative aspect-video w-full overflow-hidden bg-bg-tertiary">
-                      <img
+                      <DocumentationImage
                         src={doc.photoUrl}
-                        alt={`${doc.type} doc`}
+                        alt={`${doc.type} documentation photo`}
                         className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                        onView={(url) => setViewerImage({ src: url, alt: `${doc.type} documentation photo` })}
+                        showZoomIcon
                       />
                       <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-black/60 backdrop-blur-md text-brand-accent uppercase">
                         {doc.type}
@@ -639,7 +707,7 @@ export function JobDetailPage() {
       <AnimatePresence>
         {docModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDocModal(false)} />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeDocModal} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -656,22 +724,39 @@ export function JobDetailPage() {
                     { value: 'After', label: 'After' },
                   ]}
                   value={docForm.type}
-                  onChange={(e) => setDocForm({ ...docForm, type: e.target.value as any })}
+                  onChange={(e) => setDocForm({ ...docForm, type: e.target.value as 'Before' | 'Progress' | 'After' })}
                 />
-                <Input
-                  label="Photo URL Link"
-                  placeholder="Enter documentation photo URL link (optional)"
-                  value={docForm.url}
-                  onChange={(e) => setDocForm({ ...docForm, url: e.target.value })}
-                />
-                <p className="text-[10px] text-text-muted">
-                  *Leave empty to use a default demo image.
-                </p>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                    Photo
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleDocFileChange}
+                    disabled={docUploading}
+                    className="w-full text-sm rounded-xl bg-white/5 border border-white/10 text-text-primary file:mr-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-brand-primary/20 file:text-brand-accent file:text-sm file:font-medium file:cursor-pointer cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                </div>
+                {docPreview && (
+                  <img
+                    src={docPreview}
+                    alt="Selected preview"
+                    className="w-full h-40 object-cover rounded-xl border border-white/10"
+                  />
+                )}
+                {docError && (
+                  <p className="text-xs text-red-400" role="alert">
+                    {docError}
+                  </p>
+                )}
                 <div className="flex justify-end gap-3 pt-2">
-                  <Button variant="secondary" type="button" onClick={() => setDocModal(false)}>
+                  <Button variant="secondary" type="button" onClick={closeDocModal} disabled={docUploading}>
                     Cancel
                   </Button>
-                  <Button type="submit">Upload</Button>
+                  <Button type="submit" loading={docUploading} disabled={docUploading}>
+                    Upload
+                  </Button>
                 </div>
               </form>
             </motion.div>
@@ -759,6 +844,14 @@ export function JobDetailPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* 5. Full-size documentation image viewer */}
+      <ImageViewer
+        open={!!viewerImage}
+        onClose={() => setViewerImage(null)}
+        src={viewerImage?.src ?? ''}
+        alt={viewerImage?.alt ?? ''}
+      />
     </div>
   )
 }

@@ -19,6 +19,11 @@ import {
 import {
   supabaseUserRepo,
   supabaseSessionRepo,
+  supabaseTicketRepo,
+  supabaseNotificationRepo,
+  supabaseAssetRepo,
+  supabaseAssetHistoryRepo,
+  supabaseJobRepo,
 } from './supabase'
 
 const provider = import.meta.env.VITE_DATA_PROVIDER ?? 'local'
@@ -37,26 +42,36 @@ export const sessionRepo = useSupabase
     ? firebaseSessionRepo
     : localSessionRepo
 
-export const ticketRepo = useFirebase
-  ? firebaseTicketRepo
-  : localTicketRepo
+export const ticketRepo = useSupabase
+  ? supabaseTicketRepo
+  : useFirebase
+    ? firebaseTicketRepo
+    : localTicketRepo
 
-export const assetRepo = useFirebase
-  ? firebaseAssetRepo
-  : localAssetRepo
+export const assetRepo = useSupabase
+  ? supabaseAssetRepo
+  : useFirebase
+    ? firebaseAssetRepo
+    : localAssetRepo
 
-export const assetHistoryRepo = useFirebase
-  ? firebaseAssetHistoryRepo
-  : localAssetHistoryRepo
+export const assetHistoryRepo = useSupabase
+  ? supabaseAssetHistoryRepo
+  : useFirebase
+    ? firebaseAssetHistoryRepo
+    : localAssetHistoryRepo
 
-export const notificationRepo = useFirebase
-  ? firebaseNotificationRepo
-  : localNotificationRepo
+export const notificationRepo = useSupabase
+  ? supabaseNotificationRepo
+  : useFirebase
+    ? firebaseNotificationRepo
+    : localNotificationRepo
 
 export const contactRepo = useFirebase
   ? firebaseContactRepo
   : localContactRepo
 
-export const jobRepo = useFirebase
-  ? firebaseJobRepo
-  : localJobRepo
+export const jobRepo = useSupabase
+  ? supabaseJobRepo
+  : useFirebase
+    ? firebaseJobRepo
+    : localJobRepo
