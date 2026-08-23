@@ -29,6 +29,16 @@ export function DashboardLayout() {
     }
   }, [user, isActive, signalDashboardReady])
 
+  // Fail-safe for the login-transition handshake: if the entrance-animation
+  // completion never fires (interrupted/throttled), still signal readiness so
+  // the login transition can proceed. Normal flow signals earlier via
+  // PageTransition's onAnimationComplete below.
+  useEffect(() => {
+    if (!isActive || !user) return
+    const timer = window.setTimeout(signalDashboardReady, 1500)
+    return () => window.clearTimeout(timer)
+  }, [isActive, user, signalDashboardReady])
+
   if (user?.role === 'vendor' && isVendorDashboardBlocked(resolveVendorStatus(user))) {
     return <VendorStatusScreen />
   }

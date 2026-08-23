@@ -1,6 +1,7 @@
 import {
   createContext,
   useContext,
+  useRef,
   useState,
   useCallback,
   type ReactNode,
@@ -25,18 +26,21 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
   const [transitionId, setTransitionId] = useState(0)
   const [dashboardReady, setDashboardReady] = useState(false)
   const [manualLoginInProgress, setManualLoginInProgress] = useState(false)
+  // Guards against duplicate transition starts without impure state updaters.
+  const activeRef = useRef(false)
 
   const startTransition = useCallback(() => {
-    setIsActive(prev => {
-      if (prev) return prev
-      setTransitionId(id => id + 1)
-      setDashboardReady(false)
-      return true
-    })
+    if (activeRef.current) return
+    activeRef.current = true
+    setDashboardReady(false)
+    setTransitionId(id => id + 1)
+    setIsActive(true)
   }, [])
 
   const endTransition = useCallback(() => {
+    activeRef.current = false
     setIsActive(false)
+    setDashboardReady(false)
   }, [])
 
   const signalDashboardReady = useCallback(() => {

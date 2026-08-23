@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -7,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Input } from '@/components/ui'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTransition } from '@/contexts/TransitionContext'
-import { VENDOR_PENDING_APPROVAL_ERROR, VENDOR_EXPIRED_ERROR, ACCOUNT_PENDING_APPROVAL_ERROR, ACCOUNT_EXPIRED_ERROR } from '@/services/authService'
+import { VENDOR_PENDING_APPROVAL_ERROR, ACCOUNT_PENDING_APPROVAL_ERROR, ACCOUNT_ARCHIVED_ERROR } from '@/services/authService'
 import { fadeUp, fadeUpTransition } from '@/animations/variants'
 import { RegistrationStatusCard, clearRegistrationInfo, getRememberedAccount, clearRememberedAccount } from './RegistrationStatusCard'
 import { DemoAccountsView } from './DemoAccountsView'
@@ -32,7 +31,6 @@ const roleLabels: Record<Role, string> = {
 
 export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => void }) {
   const { login, refreshUser } = useAuth()
-  const navigate = useNavigate()
   // Gunakan endTransition, bukan completeTransition
   const {
     startTransition,
@@ -41,7 +39,6 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
     finishManualLogin,
   } = useTransition()
   const [error, setError] = useState('')
-  const [expiredEmail, setExpiredEmail] = useState<string | null>(null)
   const [rememberedAccount, setRememberedAccount] = useState<{
     userId: string
     email: string
@@ -104,7 +101,6 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
     if (isSubmitting) return
     try {
       setError('')
-      setExpiredEmail(null)
 
       // mulai flag manual login
       startManualLogin()
@@ -124,9 +120,8 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
         setError('Your account is still waiting for Leader IT approval.')
         return
       }
-      if (err instanceof Error && (err.message === VENDOR_EXPIRED_ERROR || err.message === ACCOUNT_EXPIRED_ERROR)) {
-        setError('Your account has expired.')
-        setExpiredEmail(data.email)
+      if (err instanceof Error && err.message === ACCOUNT_ARCHIVED_ERROR) {
+        setError('Your account has been rejected or deactivated. Please contact Leader IT.')
         return
       }
       setError('Invalid email or password')
@@ -146,7 +141,6 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
   const handleEmailContinue = async () => {
     if (emailCheckInFlightRef.current) return
     setError('')
-    setExpiredEmail(null)
 
     const email = getValues('email') ?? ''
     const emailResult = emailSchema.safeParse(email)
@@ -177,21 +171,18 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
   const handleBack = () => {
     setStep('email')
     setError('')
-    setExpiredEmail(null)
     setValue('password', '')
     clearErrors('password')
   }
 
   const handleOpenDemo = () => {
     setError('')
-    setExpiredEmail(null)
     clearErrors('email')
     setStep('demo')
   }
 
   const handleBackToSignIn = () => {
     setError('')
-    setExpiredEmail(null)
     setStep('email')
   }
 
@@ -396,17 +387,6 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
                     {error && (
                       <div className="text-sm text-red-500 text-center space-y-2">
                         <p>{error}</p>
-                        {expiredEmail && (
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => navigate(`/vendor/extension-request?email=${encodeURIComponent(expiredEmail)}`)}
-                            className="mt-2"
-                          >
-                            Request Extension
-                          </Button>
-                        )}
                       </div>
                     )}
                     <Button

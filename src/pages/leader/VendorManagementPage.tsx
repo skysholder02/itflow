@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Card, Badge, Button, Input, Textarea, Skeleton } from '@/components/ui'
 import { userRepo } from '@/services/repositories'
 import { notificationService } from '@/services/notificationService'
-import type { User } from '@/types'
+import { supabase, isSupabaseConfigured } from '@/services/supabase/client'
+import { vendorLifecycleService } from '@/services/supabase/vendorLifecycle'
+import type { User, VendorExtensionRequest } from '@/types'
 import { formatDate } from '@/utils/formatters'
 
 export function VendorManagementPage() {
@@ -13,11 +15,18 @@ export function VendorManagementPage() {
   
   // Modal states
   const [approveModal, setApproveModal] = useState<User | null>(null)
+  const [approveError, setApproveError] = useState<string | null>(null)
   const [rejectModal, setRejectModal] = useState<User | null>(null)
+  const [rejectError, setRejectError] = useState<string | null>(null)
   
   // Extension action states
   const [approveExtModal, setApproveExtModal] = useState<{ vendor: User; reqId: string; requestedDays: number } | null>(null)
   const [rejectExtModal, setRejectExtModal] = useState<{ vendor: User; reqId: string } | null>(null)
+  const [pendingExtRequests, setPendingExtRequests] = useState<VendorExtensionRequest[]>([])
+  const [approveExtError, setApproveExtError] = useState<string | null>(null)
+  const [rejectExtError, setRejectExtError] = useState<string | null>(null)
+
+  const supabaseMode = isSupabaseConfigured()
 
   // Forms state
   const [expiryDate, setExpiryDate] = useState(() => {
@@ -30,6 +39,7 @@ export function VendorManagementPage() {
 
   useEffect(() => {
     loadVendors()
+    loadPendingExtensionRequests()
   }, [])
 
   const loadVendors = async () => {
@@ -44,23 +54,92 @@ export function VendorManagementPage() {
     }
   }
 
+  // Pending extension requests come from public.vendor_extension_requests in
+  // Supabase mode (RLS: Leader IT sees all Pending rows). SELECT only.
+  const loadPendingExtensionRequests = async () => {
+    if (!supabaseMode) return
+    try {
+      const requests = await vendorLifecycleService.getPendingExtensionRequests()
+      setPendingExtRequests(requests)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const openApproveExtModal = (vendor: User, reqId: string, requestedDays: number) => {
+    setApproveExtError(null)
+    setApproveExtModal({ vendor, reqId, requestedDays })
+  }
+
+  const openRejectExtModal = (vendor: User, reqId: string) => {
+    setRejectExtError(null)
+    setRejectExtModal({ vendor, reqId })
+  }
+
+  const openApproveModal = (vendor: User) => {
+    setApproveError(null)
+    setApproveModal(vendor)
+  }
+
+  const openRejectModal = (vendor: User) => {
+    setRejectError(null)
+    setRejectModal(vendor)
+  }
+
   const handleApproveRegister = async () => {
     if (!approveModal) return
+    setApproveError(null)
     try {
-      const vendorTimeline = [
-        ...(approveModal.vendorTimeline || []),
-        {
-          id: `vtl-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          activity: `Registration approved. Account active until ${formatDate(expiryDate)}.`,
-        },
-      ]
-      
-      await userRepo.update(approveModal.id, {
-        vendorStatus: 'Active',
-        vendorExpiryDate: expiryDate,
-        vendorTimeline,
-      })
+      if (approveModal.status === 'PendingApproval') {
+        // STEP 4D: only a vendor whose CURRENT status is exactly 'PendingApproval'
+        // may use this RPC (PendingApproval -> Active). Extend / Reactivate /
+        // Archived flows keep their existing behavior below.
+        if (!isSupabaseConfigured() || !supabase) {
+          throw new Error(
+            'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY ' +
+              '(or keep VITE_DATA_PROVIDER=local until the Supabase repositories are ready).',
+          )
+        }
+        const { error } = await supabase.rpc('fiyro_approve_vendor_account', {
+          target_user_id: approveModal.id,
+          p_expiry_date: expiryDate,
+        })
+        if (error) throw error
+      } else {
+        if (supabaseMode && approveModal.vendorStatus === 'Active') {
+          // STEP 5D.7: Active -> Active expiry change via the STEP 5C RPC. The
+          // RPC guards the transition and writes vendor_expiry_date server-side;
+          // no client-side lifecycle profile writes here.
+          await vendorLifecycleService.changeVendorExpiry(approveModal.id, expiryDate)
+        } else if (supabaseMode && approveModal.vendorStatus === 'Expired') {
+          // STEP 5D.7: Expired -> Active reactivation via the STEP 5C RPC. The
+          // RPC sets status + expiry server-side; no client-side writes here.
+          await vendorLifecycleService.reactivateVendorAccount(approveModal.id, expiryDate)
+        } else if (supabaseMode && approveModal.vendorStatus === 'Archived') {
+          // STEP 5D.10: Archived -> Active restore via the STEP 5D.9 RPC. The
+          // RPC guards the transition and writes status + expiry server-side;
+          // rejection history stays preserved. No client-side writes here.
+          await vendorLifecycleService.restoreArchivedVendorAccount(approveModal.id, expiryDate)
+        } else {
+          // Local provider legacy path. In Supabase mode this fallback is only
+          // reachable for unrecognized states: lifecycle writes are rejected by
+          // the Supabase user repo, keeping those cases fail-closed as before.
+          const vendorTimeline = [
+            ...(approveModal.vendorTimeline || []),
+            {
+              id: `vtl-${Date.now()}`,
+              timestamp: new Date().toISOString(),
+              activity: `Registration approved. Account active until ${formatDate(expiryDate)}.`,
+            },
+          ]
+
+          await userRepo.update(approveModal.id, {
+            vendorStatus: 'Active',
+            vendorExpiryDate: expiryDate,
+            vendorTimeline,
+          })
+        }
+      }
 
       await notificationService.create({
         userId: approveModal.id,
@@ -70,33 +149,52 @@ export function VendorManagementPage() {
         targetType: 'profile',
         targetId: approveModal.id,
       })
-      
+
       setApproveModal(null)
       loadVendors()
     } catch (err) {
       console.error(err)
+      setApproveError(err instanceof Error ? err.message : 'Failed to approve account. Please try again.')
     }
   }
 
   const handleRejectRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!rejectModal || !reason.trim() || !whatsapp.trim()) return
+    setRejectError(null)
     try {
-      const vendorTimeline = [
-        ...(rejectModal.vendorTimeline || []),
-        {
-          id: `vtl-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          activity: `Registration rejected. Reason: ${reason}`,
-        },
-      ]
-      
-      await userRepo.update(rejectModal.id, {
-        vendorStatus: 'Archived',
-        vendorRejectReason: reason,
-        vendorRejectWhatsApp: whatsapp,
-        vendorTimeline,
-      })
+      if (rejectModal.status === 'PendingApproval') {
+        // STEP 4D: only a vendor whose CURRENT status is exactly 'PendingApproval'
+        // routes through the rejection RPC (PendingApproval -> Archived).
+        if (!isSupabaseConfigured() || !supabase) {
+          throw new Error(
+            'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY ' +
+              '(or keep VITE_DATA_PROVIDER=local until the Supabase repositories are ready).',
+          )
+        }
+        const { error } = await supabase.rpc('fiyro_reject_account', {
+          target_user_id: rejectModal.id,
+          p_reject_reason: reason,
+          p_reject_whatsapp: whatsapp,
+        })
+        if (error) throw error
+      } else {
+        const vendorTimeline = [
+          ...(rejectModal.vendorTimeline || []),
+          {
+            id: `vtl-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            activity: `Registration rejected. Reason: ${reason}`,
+          },
+        ]
+
+        await userRepo.update(rejectModal.id, {
+          vendorStatus: 'Archived',
+          vendorRejectReason: reason,
+          vendorRejectWhatsApp: whatsapp,
+          vendorTimeline,
+        })
+      }
 
       await notificationService.create({
         userId: rejectModal.id,
@@ -106,46 +204,56 @@ export function VendorManagementPage() {
         targetType: 'profile',
         targetId: rejectModal.id,
       })
-      
+
       setRejectModal(null)
       setReason('')
       setWhatsapp('')
       loadVendors()
     } catch (err) {
       console.error(err)
+      setRejectError(err instanceof Error ? err.message : 'Failed to reject account. Please try again.')
     }
   }
 
   const handleApproveExtension = async () => {
     if (!approveExtModal) return
     const { vendor, reqId, requestedDays } = approveExtModal
+    setApproveExtError(null)
     try {
-      // Update extension request status
-      const requests = (vendor.vendorExtensionRequests || []).map((r) => {
-        if (r.id === reqId) return { ...r, status: 'Approved' as const }
-        return r
-      })
+      if (supabaseMode) {
+        // Server is the source of truth: real request UUID in, vendor status +
+        // expiry computed by the RPC. No client-side expiry math, no profile writes.
+        if (!reqId) throw new Error('Extension request identifier is missing.')
+        await vendorLifecycleService.approveVendorExtension(reqId)
+      } else {
+        // LOCAL PROVIDER ONLY: demo data lives in localStorage, which has no
+        // RPC equivalent. Client-side expiry math and JSON mutation are legacy-only.
+        const requests = (vendor.vendorExtensionRequests || []).map((r) => {
+          if (r.id === reqId) return { ...r, status: 'Approved' as const }
+          return r
+        })
 
-      // If expired, extend from today. If not, extend from current expiry.
-      const baseDate = new Date(vendor.vendorExpiryDate && new Date(vendor.vendorExpiryDate) > new Date() ? vendor.vendorExpiryDate : new Date())
-      baseDate.setDate(baseDate.getDate() + requestedDays)
-      const newExpiry = baseDate.toISOString().split('T')[0]
+        // If expired, extend from today. If not, extend from current expiry.
+        const baseDate = new Date(vendor.vendorExpiryDate && new Date(vendor.vendorExpiryDate) > new Date() ? vendor.vendorExpiryDate : new Date())
+        baseDate.setDate(baseDate.getDate() + requestedDays)
+        const newExpiry = baseDate.toISOString().split('T')[0]
 
-      const vendorTimeline = [
-        ...(vendor.vendorTimeline || []),
-        {
-          id: `vtl-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          activity: `Account extension approved for +${requestedDays} days. New expiry: ${formatDate(newExpiry)}.`,
-        },
-      ]
+        const vendorTimeline = [
+          ...(vendor.vendorTimeline || []),
+          {
+            id: `vtl-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            activity: `Account extension approved for +${requestedDays} days. New expiry: ${formatDate(newExpiry)}.`,
+          },
+        ]
 
-      await userRepo.update(vendor.id, {
-        vendorStatus: 'Active',
-        vendorExpiryDate: newExpiry,
-        vendorExtensionRequests: requests,
-        vendorTimeline,
-      })
+        await userRepo.update(vendor.id, {
+          vendorStatus: 'Active',
+          vendorExpiryDate: newExpiry,
+          vendorExtensionRequests: requests,
+          vendorTimeline,
+        })
+      }
 
       await notificationService.create({
         userId: vendor.id,
@@ -157,9 +265,10 @@ export function VendorManagementPage() {
       })
 
       setApproveExtModal(null)
-      loadVendors()
+      await Promise.all([loadVendors(), loadPendingExtensionRequests()])
     } catch (err) {
       console.error(err)
+      setApproveExtError(err instanceof Error ? err.message : 'Failed to approve extension. Please try again.')
     }
   }
 
@@ -167,33 +276,40 @@ export function VendorManagementPage() {
     e.preventDefault()
     if (!rejectExtModal || !reason.trim() || !whatsapp.trim()) return
     const { vendor, reqId } = rejectExtModal
+    setRejectExtError(null)
     try {
-      // Update extension request status
-      const requests = (vendor.vendorExtensionRequests || []).map((r) => {
-        if (r.id === reqId) {
-          return {
-            ...r,
-            status: 'Rejected' as const,
-            rejectReason: reason,
-            rejectWhatsApp: whatsapp,
+      if (supabaseMode) {
+        // Server-side only: marks the request Rejected; the vendor row stays Expired.
+        if (!reqId) throw new Error('Extension request identifier is missing.')
+        await vendorLifecycleService.rejectVendorExtension(reqId, reason.trim(), whatsapp.trim())
+      } else {
+        // LOCAL PROVIDER ONLY: legacy JSON mutation for the demo provider.
+        const requests = (vendor.vendorExtensionRequests || []).map((r) => {
+          if (r.id === reqId) {
+            return {
+              ...r,
+              status: 'Rejected' as const,
+              rejectReason: reason,
+              rejectWhatsApp: whatsapp,
+            }
           }
-        }
-        return r
-      })
+          return r
+        })
 
-      const vendorTimeline = [
-        ...(vendor.vendorTimeline || []),
-        {
-          id: `vtl-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          activity: `Account extension rejected. Reason: ${reason}`,
-        },
-      ]
+        const vendorTimeline = [
+          ...(vendor.vendorTimeline || []),
+          {
+            id: `vtl-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            activity: `Account extension rejected. Reason: ${reason}`,
+          },
+        ]
 
-      await userRepo.update(vendor.id, {
-        vendorExtensionRequests: requests,
-        vendorTimeline,
-      })
+        await userRepo.update(vendor.id, {
+          vendorExtensionRequests: requests,
+          vendorTimeline,
+        })
+      }
 
       await notificationService.create({
         userId: vendor.id,
@@ -207,9 +323,10 @@ export function VendorManagementPage() {
       setRejectExtModal(null)
       setReason('')
       setWhatsapp('')
-      loadVendors()
+      await Promise.all([loadVendors(), loadPendingExtensionRequests()])
     } catch (err) {
       console.error(err)
+      setRejectExtError(err instanceof Error ? err.message : 'Failed to reject extension. Please try again.')
     }
   }
 
@@ -278,7 +395,9 @@ export function VendorManagementPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filtered.map((vendor) => {
-            const pendingExtReq = vendor.vendorExtensionRequests?.find((r) => r.status === 'Pending')
+            const pendingExtReq = supabaseMode
+              ? pendingExtRequests.find((r) => r.vendorId === vendor.id)
+              : vendor.vendorExtensionRequests?.find((r) => r.status === 'Pending')
             
             return (
               <Card key={vendor.id} className="border border-white/5 flex flex-col justify-between h-full">
@@ -316,14 +435,14 @@ export function VendorManagementPage() {
                       <div className="flex gap-2 pt-1">
                         <Button
                           size="sm"
-                          onClick={() => setApproveExtModal({ vendor, reqId: pendingExtReq.id, requestedDays: pendingExtReq.requestedDays })}
+                          onClick={() => openApproveExtModal(vendor, pendingExtReq.id, pendingExtReq.requestedDays)}
                         >
                           Approve
                         </Button>
                         <Button
                           size="sm"
                           variant="secondary"
-                          onClick={() => setRejectExtModal({ vendor, reqId: pendingExtReq.id })}
+                          onClick={() => openRejectExtModal(vendor, pendingExtReq.id)}
                         >
                           Reject
                         </Button>
@@ -336,26 +455,26 @@ export function VendorManagementPage() {
                 <div className="border-t border-white/5 mt-6 pt-4 flex gap-2">
                   {tab === 'pending' && (
                     <>
-                      <Button onClick={() => setApproveModal(vendor)} className="w-full">
+                      <Button onClick={() => openApproveModal(vendor)} className="w-full">
                         Approve
                       </Button>
-                      <Button variant="secondary" onClick={() => setRejectModal(vendor)} className="w-full">
+                      <Button variant="secondary" onClick={() => openRejectModal(vendor)} className="w-full">
                         Reject
                       </Button>
                     </>
                   )}
                   {tab === 'active' && !pendingExtReq && (
-                    <Button variant="secondary" onClick={() => setApproveModal(vendor)} className="w-full">
+                    <Button variant="secondary" onClick={() => openApproveModal(vendor)} className="w-full">
                       Extend / Change Expiry
                     </Button>
                   )}
                   {tab === 'expired' && !pendingExtReq && (
-                    <Button onClick={() => setApproveModal(vendor)} className="w-full">
+                    <Button onClick={() => openApproveModal(vendor)} className="w-full">
                       Reactivate
                     </Button>
                   )}
                   {tab === 'archived' && (
-                    <Button onClick={() => setApproveModal(vendor)} className="w-full">
+                    <Button onClick={() => openApproveModal(vendor)} className="w-full">
                       Approve
                     </Button>
                   )}
@@ -391,6 +510,11 @@ export function VendorManagementPage() {
                   onChange={(e) => setExpiryDate(e.target.value)}
                   required
                 />
+                {approveError && (
+                  <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                    <p className="text-red-400 text-xs font-medium">{approveError}</p>
+                  </div>
+                )}
                 <div className="flex justify-end gap-3 pt-2">
                   <Button variant="secondary" onClick={() => setApproveModal(null)}>
                     Cancel
@@ -430,6 +554,11 @@ export function VendorManagementPage() {
                   onChange={(e) => setWhatsapp(e.target.value)}
                   required
                 />
+                {rejectError && (
+                  <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                    <p className="text-red-400 text-xs font-medium">{rejectError}</p>
+                  </div>
+                )}
                 <div className="flex justify-end gap-3 pt-2">
                   <Button variant="secondary" type="button" onClick={() => setRejectModal(null)}>
                     Cancel
@@ -460,6 +589,11 @@ export function VendorManagementPage() {
                 Do you approve extending the account for vendor <strong>{approveExtModal.vendor.vendorCompany}</strong> by{' '}
                 <strong>+{approveExtModal.requestedDays} days</strong>?
               </p>
+              {approveExtError && (
+                <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <p className="text-red-400 text-xs font-medium">{approveExtError}</p>
+                </div>
+              )}
               <div className="flex justify-end gap-3 pt-2">
                 <Button variant="secondary" onClick={() => setApproveExtModal(null)}>
                   Cancel
@@ -498,6 +632,11 @@ export function VendorManagementPage() {
                   onChange={(e) => setWhatsapp(e.target.value)}
                   required
                 />
+                {rejectExtError && (
+                  <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                    <p className="text-red-400 text-xs font-medium">{rejectExtError}</p>
+                  </div>
+                )}
                 <div className="flex justify-end gap-3 pt-2">
                   <Button variant="secondary" type="button" onClick={() => setRejectExtModal(null)}>
                     Cancel

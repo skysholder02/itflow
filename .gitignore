@@ -18,6 +18,13 @@ dist-ssr
 .env.*
 !.env.example
 
+# Large local media - do not push to GitHub
+public/videos/
+
+# Local OpenCode workspace - keep config, ignore generated/local files
+.opencode/node_modules/
+.opencode/supabase-auth.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -284,7 +284,8 @@ export function VendorDashboard() {
               {recentJobs.map((job) => (
                 <div
                   key={job.id}
-                  className="w-full p-3 rounded-xl bg-surface-overlay"
+                  onClick={() => navigate(`/vendor/jobs/${job.id}`)}
+                  className="w-full p-3 rounded-xl bg-surface-overlay cursor-pointer transition-colors duration-300 border border-transparent hover:border-brand-primary/40"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-medium text-text-primary truncate">

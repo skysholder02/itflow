@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button, Input, Textarea, Card, GlowBackground, Logo } from '@/components/ui'
 import { userRepo } from '@/services/repositories'
+import { isSupabaseConfigured } from '@/services/supabase/client'
+import { vendorLifecycleService } from '@/services/supabase/vendorLifecycle'
 import { useNavigate } from 'react-router-dom'
 import { resolveVendorStatus } from '@/utils/vendorStatus'
+import type { VendorExtensionRequest } from '@/types'
 
 export function VendorStatusScreen() {
   const { user, logout, refreshUser } = useAuth()
@@ -12,6 +15,27 @@ export function VendorStatusScreen() {
   const [days, setDays] = useState('30')
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState('')
+  const [error, setError] = useState('')
+  const [extensionRequests, setExtensionRequests] = useState<VendorExtensionRequest[]>([])
+  const supabaseMode = isSupabaseConfigured()
+
+  const userId = user?.id
+
+  useEffect(() => {
+    if (!supabaseMode || !userId) return
+    let cancelled = false
+    vendorLifecycleService
+      .getMyExtensionRequests()
+      .then((requests) => {
+        if (!cancelled) setExtensionRequests(requests)
+      })
+      .catch((err) => {
+        console.error('Failed to load extension requests:', err)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [supabaseMode, userId])
 
   if (!user) return null
 
@@ -24,43 +48,66 @@ export function VendorStatusScreen() {
 
   const handleRequestExtension = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!reason.trim()) return
+    if (!user || submitting) return
+
+    setError('')
+    setSuccess('')
+
+    const trimmedReason = reason.trim()
+    const parsedDays = Number(days)
+
+    if (!trimmedReason) {
+      setError('Reason is required.')
+      return
+    }
+    if (!Number.isInteger(parsedDays) || parsedDays < 1 || parsedDays > 365) {
+      setError('Requested days must be a whole number between 1 and 365.')
+      return
+    }
 
     setSubmitting(true)
     try {
-      const newRequest = {
-        id: `ext-${Date.now()}`,
-        reason,
-        requestedDays: parseInt(days, 10),
-        status: 'Pending' as const,
-        requestedAt: new Date().toISOString(),
+      if (supabaseMode) {
+        await vendorLifecycleService.requestVendorExtension(trimmedReason, parsedDays)
+        const requests = await vendorLifecycleService.getMyExtensionRequests()
+        setExtensionRequests(requests)
+      } else {
+        // LOCAL PROVIDER ONLY: demo data lives in localStorage, which has no
+        // RPC equivalent. The Supabase flow above never reaches this branch.
+        const newRequest = {
+          id: `ext-${Date.now()}`,
+          reason: trimmedReason,
+          requestedDays: parsedDays,
+          status: 'Pending' as const,
+          requestedAt: new Date().toISOString(),
+        }
+
+        const timelineItem = {
+          id: `vtl-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          activity: `Account extension request: +${parsedDays} days. Reason: ${trimmedReason}`,
+        }
+
+        await userRepo.update(user.id, {
+          vendorExtensionRequests: [...(user.vendorExtensionRequests || []), newRequest],
+          vendorTimeline: [...(user.vendorTimeline || []), timelineItem],
+        })
       }
-
-      const timelineItem = {
-        id: `vtl-${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        activity: `Account extension request: +${days} days. Reason: ${reason}`,
-      }
-
-      const updatedRequests = [...(user.vendorExtensionRequests || []), newRequest]
-      const updatedTimeline = [...(user.vendorTimeline || []), timelineItem]
-
-      await userRepo.update(user.id, {
-        vendorExtensionRequests: updatedRequests,
-        vendorTimeline: updatedTimeline,
-      })
 
       await refreshUser()
       setSuccess('Extension request submitted successfully!')
       setReason('')
     } catch (err) {
       console.error(err)
+      setError(err instanceof Error ? err.message : 'Failed to submit request. Please try again.')
     } finally {
       setSubmitting(false)
     }
   }
 
-  const isPendingExtension = user.vendorExtensionRequests?.some((r) => r.status === 'Pending')
+  const isPendingExtension = supabaseMode
+    ? extensionRequests.some((r) => r.status === 'Pending')
+    : (user.vendorExtensionRequests?.some((r) => r.status === 'Pending') ?? false)
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative">
@@ -142,10 +189,16 @@ export function VendorStatusScreen() {
                 <form onSubmit={handleRequestExtension} className="space-y-4">
                   <h4 className="font-semibold text-text-primary text-sm">Request Extension</h4>
                   {success && <p className="text-sm text-green-400">{success}</p>}
+                  {error && (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-2xl">
+                      {error}
+                    </div>
+                  )}
                   <Input
                     label="Requested Days"
                     type="number"
                     min="1"
+                    max="365"
                     value={days}
                     onChange={(e) => setDays(e.target.value)}
                     required

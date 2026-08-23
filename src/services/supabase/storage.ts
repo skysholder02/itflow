@@ -8,6 +8,11 @@ import {
 // be created through frontend code.
 export const JOB_DOCUMENTATION_BUCKET = 'job-documentation'
 
+// Public bucket used for landing page media (setup SQL mirrors this file's
+// conventions: see supabase/landing-media-storage.sql). Public URLs need no
+// signed-URL roundtrip, unlike the private job-documentation bucket.
+export const LANDING_MEDIA_BUCKET = 'landing-media'
+
 function getClient() {
   if (!isSupabaseConfigured() || !supabase) {
     throw new Error(
@@ -16,6 +21,15 @@ function getClient() {
   }
 
   return supabase
+}
+
+// Resolves a landing-media object to its permanent public URL. When Supabase
+// is not configured (e.g. local dev without env), the provided legacy local
+// public path is returned so the landing page keeps working unchanged.
+export function getLandingMediaUrl(objectPath: string, fallbackLocalPath: string): string {
+  if (!isSupabaseConfigured() || !supabase) return fallbackLocalPath
+  const { data } = supabase.storage.from(LANDING_MEDIA_BUCKET).getPublicUrl(objectPath)
+  return data.publicUrl
 }
 
 // A storage reference is any value that is not an absolute URL. Legacy entries

@@ -50,6 +50,22 @@ export interface User {
   }[]
 }
 
+// Row-backed vendor account-extension request (public.vendor_extension_requests).
+export type VendorExtensionStatus = 'Pending' | 'Approved' | 'Rejected'
+
+export interface VendorExtensionRequest {
+  id: string
+  vendorId: string
+  reason: string
+  requestedDays: number
+  status: VendorExtensionStatus
+  rejectReason?: string
+  rejectWhatsapp?: string
+  requestedAt: string
+  decidedAt?: string
+  decidedBy?: string
+}
+
 export interface TicketNote {
   id: string
   text: string

@@ -52,6 +52,27 @@ export function MobileTransition({ onFinish, onWorkspaceReady, shouldProceed }: 
     }
   }, [shouldProceed, step, workspaceReady])
 
+  // Fail-safes: deadlines strictly longer than each normal animation so they
+  // only fire when a framer-motion completion callback was missed.
+  useEffect(() => {
+    if (step === 'fadeIn') {
+      const timer = window.setTimeout(() => setStep('workspaceInit'), 1000)
+      return () => window.clearTimeout(timer)
+    }
+    if (step === 'workspaceInit') {
+      const timer = window.setTimeout(() => setWorkspaceReady(true), 1800)
+      return () => window.clearTimeout(timer)
+    }
+    if (step === 'softBlur') {
+      const timer = window.setTimeout(() => setStep('fadeOut'), 900)
+      return () => window.clearTimeout(timer)
+    }
+    if (step === 'fadeOut') {
+      const timer = window.setTimeout(onFinish, 900)
+      return () => window.clearTimeout(timer)
+    }
+  }, [step, onFinish])
+
   const isExitingContent = step === 'softBlur' || step === 'fadeOut'
 
   return (

@@ -1,10 +1,17 @@
 import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { BehindTheOperationPlayer } from './BehindTheOperationPlayer'
+import { getLandingMediaUrl } from '@/services/supabase/storage'
 
-// Replace these with the real local assets when available.
+// Poster is served from the public `landing-media` Supabase Storage bucket
+// (falls back to the legacy local path when Supabase is not configured).
+// TODO(STEP 5D.17B): the 513 MB introduction video exceeds Supabase Storage's
+// per-object size limit, so it is still served locally from
+// public/videos/canopus-introduction.mp4. Once a <limit-compliant version is
+// uploaded to landing-media/company/canopus-introduction.mp4, switch VIDEO_SRC
+// to getLandingMediaUrl('company/canopus-introduction.mp4', '/videos/canopus-introduction.mp4').
 const VIDEO_SRC = '/videos/canopus-introduction.mp4'
-const VIDEO_POSTER = '/images/canopuss.png'
+const VIDEO_POSTER = getLandingMediaUrl('company/canopuss.png', '/images/canopuss.png')
 
 export function BehindTheOperation() {
   const reducedMotion = useReducedMotion()

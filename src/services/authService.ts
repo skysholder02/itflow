@@ -7,21 +7,9 @@ export const VENDOR_PENDING_APPROVAL_ERROR = 'VENDOR_PENDING_APPROVAL'
 export const ACCOUNT_PENDING_APPROVAL_ERROR = 'ACCOUNT_PENDING_APPROVAL'
 export const VENDOR_EXPIRED_ERROR = 'VENDOR_EXPIRED'
 export const ACCOUNT_EXPIRED_ERROR = 'ACCOUNT_EXPIRED'
+export const ACCOUNT_ARCHIVED_ERROR = 'ACCOUNT_ARCHIVED'
 
 async function syncAccountStatus(user: User): Promise<User> {
-  const resolvedStatus = resolveAccountStatus(user)
-
-  if (resolvedStatus === 'Expired') {
-    const currentStatus = user.status || user.vendorStatus
-
-    if (currentStatus === 'Active') {
-      return userRepo.update(user.id, {
-        status: 'Expired',
-        vendorStatus: user.role === 'vendor' ? 'Expired' : user.vendorStatus,
-      })
-    }
-  }
-
   return user
 }
 
@@ -31,13 +19,17 @@ function validateAccountStatus(user: User): User {
   if (isLoginBlocked(accountStatus)) {
     const reason = getLoginBlockReason(accountStatus)
 
+    // STEP 5D.11 (G3): Expired vendors keep their authenticated session;
+    // DashboardLayout renders VendorStatusScreen, which restricts them to the
+    // extension request flow (identity from auth.uid() via
+    // fiyro_request_vendor_extension). Only PendingApproval stays hard-blocked.
     if (reason === 'pending') {
       throw new Error(ACCOUNT_PENDING_APPROVAL_ERROR)
     }
+  }
 
-    if (reason === 'expired') {
-      throw new Error(ACCOUNT_EXPIRED_ERROR)
-    }
+  if (accountStatus === 'Archived') {
+    throw new Error(ACCOUNT_ARCHIVED_ERROR)
   }
 
   return user

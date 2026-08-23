@@ -105,6 +105,56 @@ const DEMO_USERS = [
   },
 ]
 
+// -----------------------------------------------------------------------------
+// Dedicated lifecycle-demo vendor accounts (STEP 6.4A).
+//
+// They are ALWAYS created as Active with a far-future expiry. The lifecycle
+// states themselves (PendingApproval / Expired / Archived) are staged later,
+// out-of-band, via targeted service-role SQL (STEP 6.4B).
+//
+// Unlike DEMO_USERS above, these accounts are NEVER upserted once they exist:
+// an existing account is only verified read-only, so re-running this seed can
+// never reset a lifecycle state staged by STEP 6.4B.
+// -----------------------------------------------------------------------------
+const VENDOR_DEMO_USERS = [
+  {
+    email: 'vendor-pending@fiyro.demo',
+    password: 'demo123',
+    name: 'Vendor Demo Pending',
+    role: 'vendor',
+    department: 'Vendor Eksternal',
+    vendorCompany: 'FIYRO Demo Vendor - Pending',
+    vendorPIC: 'Demo PIC Pending',
+    vendorPhone: '081200000011',
+    vendorWorkerCount: 2,
+    vendorExpiryDate: '2027-01-01',
+  },
+  {
+    email: 'vendor-expired@fiyro.demo',
+    password: 'demo123',
+    name: 'Vendor Demo Expired',
+    role: 'vendor',
+    department: 'Vendor Eksternal',
+    vendorCompany: 'FIYRO Demo Vendor - Expired',
+    vendorPIC: 'Demo PIC Expired',
+    vendorPhone: '081200000012',
+    vendorWorkerCount: 2,
+    vendorExpiryDate: '2027-01-01',
+  },
+  {
+    email: 'vendor-archived@fiyro.demo',
+    password: 'demo123',
+    name: 'Vendor Demo Archived',
+    role: 'vendor',
+    department: 'Vendor Eksternal',
+    vendorCompany: 'FIYRO Demo Vendor - Archived',
+    vendorPIC: 'Demo PIC Archived',
+    vendorPhone: '081200000013',
+    vendorWorkerCount: 2,
+    vendorExpiryDate: '2027-01-01',
+  },
+]
+
 function buildProfile(demo, authUserId) {
   return {
     id: authUserId,
@@ -203,6 +253,97 @@ async function main() {
   for (const r of results) {
     console.log(`  - ${r.email} [${r.action}] id=${r.id} profile=${r.profile}`)
   }
+
+  // Dedicated lifecycle-demo vendors: create-if-missing, never overwrite.
+  // --finish-vendor-demos: explicit one-shot repair that completes the Active
+  // normalization for an account left half-created by a previously crashed run
+  // (auth user exists, trigger-seeded profile still PendingApproval). Without
+  // the flag, existing accounts are strictly read-only, so a lifecycle state
+  // staged by STEP 6.4B can never be reset by re-running this seed.
+  const finishIncomplete = process.argv.includes('--finish-vendor-demos')
+  for (const demo of VENDOR_DEMO_USERS) {
+    const emailKey = demo.email.toLowerCase()
+    const existing = existingByEmail.get(emailKey)
+    let action
+    let authUserId
+
+    if (existing) {
+      action = 'ALREADY EXISTS - VERIFIED'
+      authUserId = existing.id
+    } else {
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: demo.email,
+        password: demo.password,
+        email_confirm: true,
+        user_metadata: {
+          name: demo.name,
+          role: demo.role ?? 'vendor',
+          department: demo.department,
+          vendor_company: demo.vendorCompany,
+          vendor_pic: demo.vendorPIC,
+          vendor_phone: demo.vendorPhone,
+          vendor_worker_count: demo.vendorWorkerCount,
+          vendor_expiry_date: demo.vendorExpiryDate,
+        },
+      })
+      if (error) throw new Error(`createUser failed for ${demo.email}: ${error.message}`)
+      authUserId = data.user.id
+      existingByEmail.set(emailKey, data.user)
+      action = 'created'
+
+      // Creation-time normalization only (fresh account): the handle_new_user
+      // trigger seeds a PendingApproval profile; flip it to the required
+      // initial Active state with full vendor profile data.
+      const { error: upsertError } = await supabase
+        .from('profiles')
+        .upsert(buildProfile(demo, authUserId), { onConflict: 'id' })
+      if (upsertError) {
+        throw new Error(`profile upsert failed for ${demo.email}: ${upsertError.message}`)
+      }
+    }
+
+    // Read-only verification. An existing profile is NEVER written here,
+    // except through the explicit --finish-vendor-demos repair path below.
+    let profLabel
+    {
+      const { data: prof, error: profError } = await supabase
+        .from('profiles')
+        .select('id,email,role,status,vendor_expiry_date,vendor_company')
+        .eq('id', authUserId)
+        .maybeSingle()
+      if (profError) throw new Error(`profile verify failed for ${demo.email}: ${profError.message}`)
+
+      if (!prof) {
+        // Safety net only: pre-existing auth user without any profile row.
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert(buildProfile(demo, authUserId))
+        if (insertError) {
+          throw new Error(`profile backfill insert failed for ${demo.email}: ${insertError.message}`)
+        }
+        profLabel = 'vendor/Active (backfilled - was missing)'
+      } else if (
+        finishIncomplete &&
+        prof.status === 'PendingApproval' &&
+        prof.vendor_company !== null &&
+        prof.vendor_expiry_date !== null
+      ) {
+        // Explicit repair: finish the interrupted creation-time normalization.
+        const { error: upsertError } = await supabase
+          .from('profiles')
+          .upsert(buildProfile(demo, authUserId), { onConflict: 'id' })
+        if (upsertError) {
+          throw new Error(`profile finish failed for ${demo.email}: ${upsertError.message}`)
+        }
+        profLabel = 'vendor/Active (finished incomplete prior creation)'
+      } else {
+        profLabel = `${prof.role}/${prof.status} expiry=${prof.vendor_expiry_date ?? 'null'}`
+      }
+    }
+
+    console.log(`  - ${demo.email} [${action}] id=${authUserId} profile=${profLabel}`)
+  }
+
   console.log('Idempotent - safe to re-run.')
 }
 

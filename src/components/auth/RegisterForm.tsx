@@ -2,13 +2,31 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Button, Input, Select } from '@/components/ui'
 import { userRepo } from '@/services/repositories'
+import { supabaseAuthAdapter, type SignUpMetadata } from '@/services/supabase/authAdapter'
 import { fadeUp, fadeUpTransition } from '@/animations/variants'
 import { setRegistrationInfo } from '@/components/auth/RegistrationStatusCard'
-import type { User } from '@/types'
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void
   onSuccess: () => void
+}
+
+// Translate raw Supabase Auth errors into the messages already used by the
+// registration UI. Unknown errors pass their original message through.
+function mapSignUpError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : ''
+  const msg = raw.toLowerCase()
+
+  if (msg.includes('already registered')) return 'Email is already registered'
+  if (msg.includes('password should be') || msg.includes('at least')) {
+    return 'Password must be at least 6 characters'
+  }
+  if (msg.includes('invalid email') || msg.includes('unable to validate email')) {
+    return 'Please enter a valid email address'
+  }
+  if (msg.includes('rate limit')) return 'Too many attempts. Please try again later.'
+
+  return raw || 'An error occurred during registration'
 }
 
 export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) {
@@ -22,6 +40,8 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
   const [picName, setPicName] = useState('')
   const [phone, setPhone] = useState('')
   const [workerCount, setWorkerCount] = useState('1')
+  const [whatsapp, setWhatsapp] = useState('')
+  const [vendorExpiryDate, setVendorExpiryDate] = useState('')
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -37,24 +57,45 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
         return
       }
 
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters')
+        return
+      }
+
       if (role !== 'vendor' && !name) {
         setError('All fields are required')
         return
       }
 
-      const existing = await userRepo.getByEmail(email)
+      // Best-effort duplicate check against public.profiles. The lookup can be
+      // unavailable for unauthenticated visitors (profiles is intentionally not
+      // readable by anon), so lookup failures are ignored and registration
+      // continues — Supabase Auth remains the authoritative duplicate check:
+      // signUp rejects duplicates with an error that mapSignUpError converts to
+      // "Email is already registered".
+      let existing: Awaited<ReturnType<typeof userRepo.getByEmail>> = null
+      try {
+        existing = await userRepo.getByEmail(email)
+      } catch {
+        // Profile lookup unavailable for anon; proceed to signUp.
+      }
       if (existing) {
         setError('Email is already registered')
         return
       }
 
-      const userData: Omit<User, 'id'> = {
-        email,
-        password,
+      // Registration goes through Supabase Auth signUp(). These metadata keys
+      // are read by the existing handle_new_user() trigger, which creates the
+      // profile automatically with status 'PendingApproval'. No password and
+      // no manual profile row are ever written to public.profiles here.
+      const metadata: SignUpMetadata = {
+        name: role === 'vendor' ? picName : name,
         role,
         department: role === 'vendor' ? 'External Vendor' : department || 'General',
-        name: role === 'vendor' ? picName : name,
-        status: 'PendingApproval',
+      }
+
+      if (whatsapp.trim()) {
+        metadata.whatsapp = whatsapp.trim()
       }
 
       if (role === 'vendor') {
@@ -69,23 +110,23 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
           return
         }
 
-        userData.vendorStatus = 'PendingApproval'
-        userData.vendorCompany = companyName
-        userData.vendorPIC = picName
-        userData.vendorPhone = phone
-        userData.vendorWorkerCount = parsedWorkerCount
-        userData.vendorWorkersList = []
-        userData.vendorTimeline = [
-          {
-            id: `vtl-${Date.now()}`,
-            timestamp: new Date().toISOString(),
-            activity: `Vendor account registration submitted (PendingApproval) by PIC: ${picName}.`,
-          },
-        ]
-        userData.vendorExtensionRequests = []
+        metadata.vendor_company = companyName
+        metadata.vendor_pic = picName
+        metadata.vendor_phone = phone
+
+        metadata.vendor_worker_count = parsedWorkerCount
+
+        if (vendorExpiryDate) {
+          metadata.vendor_expiry_date = vendorExpiryDate
+        }
       }
 
-      await userRepo.create(userData)
+      await supabaseAuthAdapter.signUp({ email, password, metadata })
+
+      // Enforce the approval-first workflow: when email confirmation is
+      // disabled Supabase returns an authenticated session, but the account is
+      // still PendingApproval and must not hold a session in FIYRO.
+      await supabaseAuthAdapter.signOut()
 
       // Store registration info for status card on Login page
       setRegistrationInfo(email, role)
@@ -93,8 +134,7 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
       // Notify parent to show the login view with registration status
       onSuccess()
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'An error occurred during registration'
-      setError(message)
+      setError(mapSignUpError(err))
     } finally {
       setLoading(false)
     }
@@ -193,6 +233,12 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
                 onChange={(e) => setWorkerCount(e.target.value)}
                 required
               />
+              <Input
+                label="Contract Expiry Date (optional)"
+                type="date"
+                value={vendorExpiryDate}
+                onChange={(e) => setVendorExpiryDate(e.target.value)}
+              />
             </motion.div>
           ) : (
             <>
@@ -230,6 +276,13 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
                   onChange={(e) => setDepartment(e.target.value)}
                 />
               </div>
+
+              <Input
+                label="WhatsApp Number (optional)"
+                placeholder="e.g. 081234567890"
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+              />
             </>
           )}
 

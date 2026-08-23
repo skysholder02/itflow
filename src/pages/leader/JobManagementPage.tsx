@@ -7,17 +7,18 @@ import { jobService } from '@/services/jobService'
 import type { User, Job } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatDate } from '@/utils/formatters'
+import { resolveAccountStatus } from '@/utils/vendorStatus'
 
 export function JobManagementPage() {
   const navigate = useNavigate()
   const { user: currentUser, role } = useAuth()
-  
+
   const [jobs, setJobs] = useState<Job[]>([])
   const [activeVendors, setActiveVendors] = useState<User[]>([])
   const [itSupports, setItSupports] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('all')
-  
+
   // Create Job Modal
   const [createModal, setCreateModal] = useState(false)
   const [form, setForm] = useState({
@@ -42,17 +43,23 @@ export function JobManagementPage() {
         jobService.getJobs(role, currentUser.id),
         userRepo.getAll(),
       ])
-      
+
       setJobs(allJobs)
-      setActiveVendors(allUsers.filter((u) => u.role === 'vendor' && u.vendorStatus === 'Active'))
+      // Only vendors whose RESOLVED lifecycle status is Active are assignable.
+      // A raw 'Active' status with a past vendorExpiryDate resolves to Expired
+      // and would be blocked at login from ever seeing assigned jobs.
+      const vendorsList = allUsers.filter(
+        (u) => u.role === 'vendor' && resolveAccountStatus(u) === 'Active',
+      )
+      setActiveVendors(vendorsList)
       setItSupports(allUsers.filter((u) => u.role === 'itsupport'))
-      
-      // Select default options for the form if available
-      const vendorsList = allUsers.filter((u) => u.role === 'vendor' && u.vendorStatus === 'Active')
+
+      // Select default options for the form if available. The Vendor Partner
+      // select intentionally starts empty with a disabled placeholder so a job
+      // can never be silently assigned to an arbitrary vendorsList[0].
       const supportsList = allUsers.filter((u) => u.role === 'itsupport')
       setForm((prev) => ({
         ...prev,
-        vendorId: vendorsList[0]?.id || '',
         itSupportId: supportsList[0]?.id || '',
       }))
     } catch (err) {
@@ -103,7 +110,7 @@ export function JobManagementPage() {
         description: '',
         location: '',
         deadline: '',
-        vendorId: activeVendors[0]?.id || '',
+        vendorId: '',
         itSupportId: itSupports[0]?.id || '',
       })
       loadData()
@@ -267,6 +274,7 @@ export function JobManagementPage() {
                     />
                     <Select
                       label="Vendor Partner"
+                      placeholder="Select a vendor…"
                       options={activeVendors.map((v) => ({
                         value: v.id,
                         label: `${v.vendorCompany} (PIC: ${v.vendorPIC})`,

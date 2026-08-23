@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTransition } from '@/contexts/TransitionContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { DesktopTransition } from './DesktopTransition'
 import { MobileTransition } from './MobileTransition'
@@ -15,6 +16,7 @@ export function LoginTransition() {
     dashboardReady,
     finishManualLogin,
   } = useTransition()
+  const { isAuthenticated } = useAuth()
   const isMobile = useIsMobile()
   const navigate = useNavigate()
 
@@ -47,6 +49,20 @@ export function LoginTransition() {
     }
   }, [dashboardReady, isActive, shouldProceed])
 
+  // Last-resort watchdog: if authentication genuinely succeeded but every
+  // animation-driven handoff above failed, release the overlay after a hard
+  // deadline. GuestOnlyRoute then completes the redirect to /dashboard.
+  useEffect(() => {
+    if (!isActive || !isAuthenticated) return
+    const timer = window.setTimeout(() => {
+      if (finishGuardRef.current) return
+      finishGuardRef.current = true
+      finishManualLogin()
+      endTransition()
+    }, 10000)
+    return () => window.clearTimeout(timer)
+  }, [isActive, isAuthenticated, finishManualLogin, endTransition])
+
   // ✅ Tambahin finishManualLogin() di awal
   const onFinish = useCallback(() => {
     if (finishGuardRef.current) return
@@ -70,6 +86,17 @@ export function LoginTransition() {
     endTransition()
     setIsFadingOut(false)
   }, [isFadingOut, endTransition, finishManualLogin]) // ✅ tambahin finishManualLogin ke deps
+
+  // Mobile path relies on the overlay fade callback above; guarantee it.
+  useEffect(() => {
+    if (!isFadingOut) return
+    const timer = window.setTimeout(() => {
+      finishManualLogin()
+      endTransition()
+      setIsFadingOut(false)
+    }, 1200)
+    return () => window.clearTimeout(timer)
+  }, [isFadingOut, finishManualLogin, endTransition])
 
   const handleWorkspaceReady = useCallback(() => {
     navigate('/dashboard')

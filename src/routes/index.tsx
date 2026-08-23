@@ -49,9 +49,6 @@ const MaterialNotesPage = lazy(() =>
 const DocumentationPage = lazy(() =>
   import('@/pages/vendor/DocumentationPage').then((m) => ({ default: m.DocumentationPage })),
 )
-const ExtensionRequestPage = lazy(() =>
-  import('@/pages/vendor/ExtensionRequestPage').then((m) => ({ default: m.ExtensionRequestPage })),
-)
 
 // Leader & IT Support specific pages
 const UserManagementPage = lazy(() =>
@@ -93,7 +90,6 @@ export function AppRoutes() {
           }
         />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/vendor/extension-request" element={<ExtensionRequestPage />} />
         <Route
           path="/assets/:id"
           element={<AssetDetailPage publicView />}

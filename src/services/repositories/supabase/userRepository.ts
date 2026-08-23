@@ -47,7 +47,9 @@ function getClient() {
 class SupabaseUserRepository implements IUserRepository {
   async getAll(): Promise<User[]> {
     const client = getClient()
-    const { data, error } = await client.from('profiles').select('*')
+    // Deterministic ordering by the canonical display name so list-derived UI
+    // (e.g. default select entries) is stable across loads.
+    const { data, error } = await client.from('profiles').select('*').order('name', { ascending: true })
     if (error) throw new Error(`Failed to load profiles: ${error.message}`)
     return (data ?? []).map(mapProfileRowToUser)
   }

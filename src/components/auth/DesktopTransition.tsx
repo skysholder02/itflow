@@ -25,15 +25,25 @@ export function DesktopTransition({ onFinish, onDoorsClosed, shouldProceed }: De
   // Count completed door panels to know when both have finished.
   const doorCloseCountRef = useRef(0)
   const doorOpenCountRef = useRef(0)
+  // Ensures the doors-closed handoff (navigate) runs exactly once even if an
+  // animation callback is dropped or duplicated.
+  const didEnterWorkspaceRef = useRef(false)
+
+  const enterWorkspace = useCallback(() => {
+    if (didEnterWorkspaceRef.current) return
+    didEnterWorkspaceRef.current = true
+    setStep('workspaceInit')
+    onDoorsClosed()
+  }, [onDoorsClosed])
 
   const onDoorCloseComplete = useCallback(() => {
+    if (didEnterWorkspaceRef.current) return
     doorCloseCountRef.current += 1
     if (doorCloseCountRef.current >= 2) {
       doorCloseCountRef.current = 0
-      setStep('workspaceInit')
-      onDoorsClosed()
+      enterWorkspace()
     }
-  }, [onDoorsClosed])
+  }, [enterWorkspace])
 
   const onDoorOpenComplete = useCallback(() => {
     doorOpenCountRef.current += 1
@@ -49,6 +59,32 @@ export function DesktopTransition({ onFinish, onDoorsClosed, shouldProceed }: De
       setStep('doorOpen')
     }
   }, [shouldProceed, step, workspaceReady])
+
+  // Fail-safes: each deadline is strictly longer than its normal animation,
+  // so they only fire when a framer-motion completion callback was missed.
+  useEffect(() => {
+    if (step !== 'doorClose') return
+    const timer = window.setTimeout(enterWorkspace, 1400)
+    return () => window.clearTimeout(timer)
+  }, [step, enterWorkspace])
+
+  useEffect(() => {
+    if (step !== 'workspaceInit') return
+    const timer = window.setTimeout(() => setWorkspaceReady(true), 2600)
+    return () => window.clearTimeout(timer)
+  }, [step])
+
+  useEffect(() => {
+    if (step !== 'doorOpen') return
+    const timer = window.setTimeout(() => setStep('dashboardReveal'), 1400)
+    return () => window.clearTimeout(timer)
+  }, [step])
+
+  useEffect(() => {
+    if (step !== 'dashboardReveal') return
+    const timer = window.setTimeout(onFinish, 900)
+    return () => window.clearTimeout(timer)
+  }, [step, onFinish])
 
   const doorsOpen = step === 'doorOpen' || step === 'dashboardReveal'
   const showLogo = step === 'doorClose'

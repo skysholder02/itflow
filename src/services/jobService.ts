@@ -1,5 +1,6 @@
-import { jobRepo } from '@/services/repositories'
+import { jobRepo, userRepo } from '@/services/repositories'
 import { notificationService } from '@/services/notificationService'
+import { resolveAccountStatus } from '@/utils/vendorStatus'
 import type { Job, JobStatus, JobWorker, JobMaterialNote, JobDocumentation, JobTimelineItem, Role } from '@/types'
 
 function getFormattedTime(): string {
@@ -61,6 +62,14 @@ export const jobService = {
   },
 
   async createJob(data: Omit<Job, 'id' | 'status' | 'timeline' | 'documentation' | 'materials' | 'extensionRequests' | 'ratings'>): Promise<Job> {
+    // Guard against assigning to a vendor whose resolved lifecycle status is
+    // not Active (e.g. raw status still 'Active' but vendorExpiryDate passed).
+    // Such a vendor can never reach My Jobs, so the assignment would be lost.
+    const targetVendor = await userRepo.getById(data.vendorId)
+    if (!targetVendor || targetVendor.role !== 'vendor' || resolveAccountStatus(targetVendor) !== 'Active') {
+      throw new Error('Selected vendor is not an active vendor account.')
+    }
+
     const time = getFormattedTime()
     const initialTimeline: JobTimelineItem[] = [
       {

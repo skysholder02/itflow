@@ -47,10 +47,57 @@ function toSession(user: User): Session {
   }
 }
 
+export interface SignUpInput {
+  email: string
+  password: string
+  // Passed as Supabase Auth user metadata (raw_user_meta_data). The
+  // handle_new_user trigger on auth.users reads these keys to create the
+  // public.profiles row automatically — no direct profile insert happens here.
+  metadata: SignUpMetadata
+}
+
+// Keys consumed by handle_new_user() in the database. Keep in sync with that
+// function — it validates role against ('karyawan'|'itsupport'|'leaderit'|
+// 'vendor') and safely casts the vendor numeric/date fields.
+export interface SignUpMetadata {
+  name?: string
+  role?: 'karyawan' | 'itsupport' | 'leaderit' | 'vendor'
+  department?: string
+  whatsapp?: string
+  vendor_company?: string
+  vendor_pic?: string
+  vendor_phone?: string
+  vendor_worker_count?: number
+  vendor_expiry_date?: string
+}
+
+export interface SignUpResult {
+  // True when the project requires email confirmation: Supabase issued no
+  // session yet and the user must confirm their email before signing in.
+  needsEmailConfirmation: boolean
+}
+
 // Clean abstraction over Supabase Auth. Does not expose raw Supabase objects.
 // Never reads, compares, or stores passwords — Supabase Auth handles credential
 // verification internally.
 export const supabaseAuthAdapter = {
+  // Creates the Auth user only. The profile row is created by the existing
+  // handle_new_user() database trigger (status defaults to PendingApproval).
+  // This function intentionally does not insert into public.profiles.
+  async signUp(input: SignUpInput): Promise<SignUpResult> {
+    const client = getClient()
+
+    const { data, error } = await client.auth.signUp({
+      email: input.email,
+      password: input.password,
+      options: { data: input.metadata },
+    })
+
+    if (error) throw new Error(error.message)
+
+    return { needsEmailConfirmation: !data.session }
+  },
+
   async signInWithPassword(email: string, password: string): Promise<Session> {
     const client = getClient()
     const { data, error } = await client.auth.signInWithPassword({ email, password })
