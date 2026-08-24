@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Input } from '@/components/ui'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth, LOGIN_TIMEOUT_ERROR } from '@/contexts/AuthContext'
 import { useTransition } from '@/contexts/TransitionContext'
 import { VENDOR_PENDING_APPROVAL_ERROR, ACCOUNT_PENDING_APPROVAL_ERROR, ACCOUNT_ARCHIVED_ERROR } from '@/services/authService'
 import { fadeUp, fadeUpTransition } from '@/animations/variants'
@@ -31,6 +32,7 @@ const roleLabels: Record<Role, string> = {
 
 export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => void }) {
   const { login, refreshUser } = useAuth()
+  const navigate = useNavigate()
   // Gunakan endTransition, bukan completeTransition
   const {
     startTransition,
@@ -116,6 +118,10 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
       finishManualLogin()
       endTransition()
 
+      if (err instanceof Error && err.message === LOGIN_TIMEOUT_ERROR) {
+        setError('Login is taking too long. Please check your connection and try again.')
+        return
+      }
       if (err instanceof Error && (err.message === VENDOR_PENDING_APPROVAL_ERROR || err.message === ACCOUNT_PENDING_APPROVAL_ERROR)) {
         setError('Your account is still waiting for Leader IT approval.')
         return
@@ -199,7 +205,14 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
     startManualLogin()
     startTransition()
 
-    await refreshUser()
+    try {
+      await refreshUser()
+      navigate('/dashboard', { replace: true })
+    } catch (err) {
+      finishManualLogin()
+      endTransition()
+      console.error('Post-registration sign-in failed:', err)
+    }
   }
 
   const handleContinueLogin = async () => {

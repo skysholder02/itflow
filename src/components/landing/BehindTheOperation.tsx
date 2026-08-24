@@ -1,22 +1,20 @@
-import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { BehindTheOperationPlayer } from './BehindTheOperationPlayer'
 import { getLandingMediaUrl } from '@/services/supabase/storage'
 
 // Poster is served from the public `landing-media` Supabase Storage bucket
 // (falls back to the legacy local path when Supabase is not configured).
-// TODO(STEP 5D.17B): the 513 MB introduction video exceeds Supabase Storage's
-// per-object size limit, so it is still served locally from
-// public/videos/canopus-introduction.mp4. Once a <limit-compliant version is
-// uploaded to landing-media/company/canopus-introduction.mp4, switch VIDEO_SRC
-// to getLandingMediaUrl('company/canopus-introduction.mp4', '/videos/canopus-introduction.mp4').
-const VIDEO_SRC = '/videos/canopus-introduction.mp4'
+// STEP 5D.17F: the introduction video is hosted on Google Drive because the
+// original 513 MB file exceeds Supabase Storage's per-object size limit.
+// Clicking the card opens the Drive video in a new tab; the local
+// public/videos/canopus-introduction.mp4 stays on disk (git-ignored) but is
+// no longer loaded by this section.
+const GOOGLE_DRIVE_VIDEO_URL =
+  'https://drive.google.com/file/d/1SrkEjXcgxA9sVvVjbk8hB7IRnl8rHkKb/view?usp=sharing'
 const VIDEO_POSTER = getLandingMediaUrl('company/canopuss.png', '/images/canopuss.png')
 
 export function BehindTheOperation() {
   const reducedMotion = useReducedMotion()
   const animate = !reducedMotion
-  const [playerOpen, setPlayerOpen] = useState(false)
 
   const headerInitial = animate ? { opacity: 0, y: 20 } : false
   const headerWhileInView = animate ? { opacity: 1, y: 0 } : undefined
@@ -46,7 +44,7 @@ export function BehindTheOperation() {
 
         <motion.button
           type="button"
-          onClick={() => setPlayerOpen(true)}
+          onClick={() => window.open(GOOGLE_DRIVE_VIDEO_URL, '_blank', 'noopener,noreferrer')}
           aria-label="Open Behind the Operation video"
           initial={mediaInitial}
           whileInView={mediaWhileInView}
@@ -55,9 +53,7 @@ export function BehindTheOperation() {
           className="group relative mt-16 block w-full overflow-hidden rounded-3xl border border-[rgba(255,255,255,0.12)] bg-[#0b0b10] shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_48px_rgba(0,0,0,0.08)] cursor-pointer text-left md:mx-auto md:max-w-3xl lg:max-w-none"
         >
           <video
-            src={VIDEO_SRC}
             poster={VIDEO_POSTER}
-            preload="metadata"
             playsInline
             aria-hidden="true"
             tabIndex={-1}
@@ -72,13 +68,6 @@ export function BehindTheOperation() {
           </span>
         </motion.button>
       </div>
-
-      <BehindTheOperationPlayer
-        open={playerOpen}
-        onClose={() => setPlayerOpen(false)}
-        src={VIDEO_SRC}
-        poster={VIDEO_POSTER}
-      />
     </section>
   )
 }

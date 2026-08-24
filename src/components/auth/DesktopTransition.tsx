@@ -5,6 +5,10 @@ import { doorLeft, doorRight, doorTransition, springConfig } from '@/animations/
 
 type Step = 'doorClose' | 'workspaceInit' | 'doorOpen' | 'dashboardReveal'
 
+const devLog = (...args: unknown[]) => {
+  if (import.meta.env.DEV) console.info('[FIYRO-LOGIN-DESK]', ...args)
+}
+
 const initSteps = [
   { label: 'Authentication Verified' },
   { label: 'User Profile Loaded' },
@@ -56,6 +60,7 @@ export function DesktopTransition({ onFinish, onDoorsClosed, shouldProceed }: De
   // Advance to doorOpen when the parent signals (navigation done).
   useEffect(() => {
     if (shouldProceed && step === 'workspaceInit' && workspaceReady) {
+      devLog('entering doorOpen', { shouldProceed, workspaceReady })
       setStep('doorOpen')
     }
   }, [shouldProceed, step, workspaceReady])
@@ -70,7 +75,10 @@ export function DesktopTransition({ onFinish, onDoorsClosed, shouldProceed }: De
 
   useEffect(() => {
     if (step !== 'workspaceInit') return
-    const timer = window.setTimeout(() => setWorkspaceReady(true), 2600)
+    const timer = window.setTimeout(() => {
+      devLog('workspaceReady=true via 2600ms fallback-timer')
+      setWorkspaceReady(true)
+    }, 2600)
     return () => window.clearTimeout(timer)
   }, [step])
 
@@ -201,7 +209,10 @@ export function DesktopTransition({ onFinish, onDoorsClosed, shouldProceed }: De
                 initial={{ width: '0%' }}
                 animate={{ width: '100%' }}
                 transition={{ duration: 1.8, ease: 'easeInOut' }}
-                onAnimationComplete={() => setWorkspaceReady(true)}
+                onAnimationComplete={() => {
+                  devLog('workspaceReady=true via progress-animation-callback')
+                  setWorkspaceReady(true)
+                }}
               />
             </div>
           </div>

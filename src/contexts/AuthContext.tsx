@@ -10,6 +10,28 @@ import { authService } from '@/services/authService'
 import { migrateDatabase, seedDatabase } from '@/services/repositories/local/seed'
 import type { Session, User, Role } from '@/types'
 
+// Thrown when a login network leg stalls longer than LOGIN_TIMEOUT_MS so the UI
+// can end the transition with a real error instead of hanging forever.
+export const LOGIN_TIMEOUT_ERROR = 'LOGIN_TIMEOUT'
+
+const LOGIN_TIMEOUT_MS = 20000
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(LOGIN_TIMEOUT_ERROR)), ms)
+    promise.then(
+      value => {
+        window.clearTimeout(timer)
+        resolve(value)
+      },
+      error => {
+        window.clearTimeout(timer)
+        reject(error)
+      },
+    )
+  })
+}
+
 interface AuthContextType {
   user: User | null
   session: Session | null
@@ -47,9 +69,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshUser])
 
   const login = async (email: string, password: string) => {
-    const newSession = await authService.login(email, password)
+    // Atomic handoff: auth state commits only after BOTH network legs succeed,
+    // each bounded by a timeout so a stalled socket can't freeze the pipeline.
+    const newSession = await withTimeout(authService.login(email, password), LOGIN_TIMEOUT_MS)
+    const currentUser = await withTimeout(authService.getCurrentUser(), LOGIN_TIMEOUT_MS)
     setSession(newSession)
-    const currentUser = await authService.getCurrentUser()
     setUser(currentUser)
   }
 
